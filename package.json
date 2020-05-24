@@ -1,0 +1,37 @@
+{
+  "name": "electron-manager",
+  "version": "1.0.0",
+  "description": "Electron app manager modules",
+  "author": "HashedIn Technologies",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "files": [
+    "/lib"
+  ],
+  "scripts": {
+    "build": "rimraf lib && webpack --config configs/webpack.config.prod.js",
+    "start": "electron examples/electron-manager-example",
+    "test": "npm run test:main && npm run test:renderer",
+    "test:main": "electron-mocha test/main --timeout 10000 --colors --inspect --recursive --sort",
+    "test:renderer": "electron-mocha --renderer test/renderer --timeout 10000 --colors --inspect --recursive --sort"
+  },
+  "devDependencies": {
+    "@babel/core": "7.6.4",
+    "@babel/plugin-proposal-class-properties": "7.5.5",
+    "@babel/preset-env": "7.6.3",
+    "babel-loader": "8.0.6",
+    "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
+    "copy-webpack-plugin": "5.1.1",
+    "electron": "9.0.0",
+    "electron-mocha": "8.2.2",
+    "fs-extra": "8.1.0",
+    "rimraf": "3.0.2",
+    "webpack": "4.41.2",
+    "webpack-cli": "3.3.10"
+  },
+  "dependencies": {
+    "lodash.merge": "4.6.2",
+    "valid-filename": "3.1.0"
+  }
+}
