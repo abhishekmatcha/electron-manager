@@ -3,6 +3,7 @@ import path from 'path';
 import electronManager from '../../../../lib';
 
 const {
+  logger,
   storageManager,
   windowManager
 } = electronManager;
@@ -46,6 +47,8 @@ class ExampleApp {
    * @description Create main window.
    */
   createMainWindow = () => {
+    logger.init({ proxifyConsol: true });
+
     this.mainWindow = windowManager.createWindow({
       devTools: true,
       name: 'home',
@@ -61,6 +64,8 @@ class ExampleApp {
 
     // Emitted when the window is closed.
     this.mainWindow.on('closed', () => { this.mainWindow = null; });
+
+    logger.log('This is a test message from Logger');
   }
 
   /**

@@ -6,10 +6,12 @@
  * Created on: 25/05/2020
  */
 
+import logger from './modules/logger/logger.main';
 import storageManager from './modules/storageManager/storageManager.main';
 import windowManager from './modules/windowManager/windowManager.main';
 
 export default {
+  logger,
   storageManager,
   windowManager
 }

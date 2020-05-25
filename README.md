@@ -41,9 +41,79 @@ logger.log('This is a test message...!!!');
 
 ## Modules
 
+* **Logger**
 * **StorageManager**
 * **WindowManager**
 
+### Logger
+
+Logger module helps to log all kinds of entries to both console and file. It can be used in both the main process as well as the renderer process. The logger is a lightweight module in `electron-manager` which helps to debug the application in development as well as in production.
+
+> **Note:** It is possible to have a different set of configurations for both main and renderer. In case there are multiple renderer processes in the application, then the logger module also has to be initialized in each module wherever it is required. Also, we can have a different set of configurations in each renderer process. If there is no custom configuration for renderer processes, then the main process configuration will be extended to all renderer processes.
+
+#### Methods
+
+* **init (main + renderer)**
+
+The logger module has to be initialized in the respective processes with a relevant set of configuration options. Since there can be multiple renderer processes in an electron application, the logger module also can be set up for all the processes based on user preferences.
+
+|     Params    | Type    | Default Value   | Description                                                     |
+|---------------|---------|-----------------|-----------------------------------------------------------------|
+| cleanLogs     | boolean | true            | Clean log files periodically                                    |
+| logFolderPath | string  | `userData/logs` | Application logs folder path                                    |
+| logPeriod     | number  | 30              | Logfile's lifespan in days.                                     |
+| proxifyConsol | boolean | false           | Override all console statements with proper logger statements.  |
+| setFileHeader | boolean | true            | Add file header in each log file                                |
+| writeToFile   | boolean | true            | Write log entries into a system file                            |
+
+> **Note:** *`userData` The directory for storing your app's configuration files, which by default it is the appData directory appended with your app's name.*
+
+```js
+import electronManager from 'electron-manager';
+
+const { logger } = electronManager;
+
+...
+logger.init({
+  proxifyConsol: true,
+  logPeriod: 7
+});
+```
+
+* **error (main + renderer)**
+
+`error` method is a proxy of `console.error`. If `proxifyConsol: true`, then all `console.error` statements will be proxified to `logger.error`. Also, all the logger statement properties will be applicable to the console statement as well. This will be the same for below methods as well.
+
+```js
+logger.error('This is an error message!');
+
+// If `proxifyConsol: true`, then you can also use the console statements
+console.error('This is an error message!');
+```
+
+* **info (main + renderer)**
+
+`info` method is a proxy of `console.info`.
+
+```js
+logger.info('This is an info message!');
+```
+
+* **log (main + renderer)**
+
+`log` method is a proxy of `console.log`.
+
+```js
+logger.log('This is a log message!');
+```
+
+* **warn (main + renderer)**
+
+`warn` method is a proxy of `console.warn`.
+
+```js
+logger.warn('This is a warning message!');
+```
 
 ### StorageManager
 
