@@ -1,1 +1,1 @@
-console.log('Window Manager');
+console.log('Window Manager Main');

@@ -1,14 +1,22 @@
+/**
+ * @file paths.js
+ * @description Electron Manager webpack configuration
+ * Created on: 22/05/2020
+ * @author Sanoop Jose <sanoop.jose@hashedin.com>
+ */
+
+'use strict';
+
 const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const paths = require('./utils/paths.js');
-const helper = require('./utils/helper.js');
+const paths = require('./paths.js');
 
 const electronMainConfig = {
   target: 'electron-main',
-  entry: helper.entry('main'),
+  entry: './src/index.main.js',
   output: {
-    filename: '[name].main.js',
+    filename: 'index.main.js',
   },
   plugins: [
     new CopyWebpackPlugin([
@@ -19,9 +27,9 @@ const electronMainConfig = {
 
 const electronRendererConfig = {
   target: 'electron-renderer',
-  entry: helper.entry('renderer'),
+  entry: './src/index.renderer.js',
   output: {
-    filename: '[name].renderer.js',
+    filename: 'index.renderer.js',
   }
 }
 

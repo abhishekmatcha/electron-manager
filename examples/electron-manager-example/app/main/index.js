@@ -1,6 +1,8 @@
-// Modules to control application life and create native browser window
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
+import electronManager from '../../../../lib';
+
+const windowManager = electronManager.windowManager;
 
 class ExampleApp {
   constructor() {
@@ -15,6 +17,8 @@ class ExampleApp {
     app.on('activate', () => {
       if (this.mainWindow === null) { this.createMainWindow(); }
     });
+
+    console.log('windowManager:', windowManager);
   }
 
   /**
