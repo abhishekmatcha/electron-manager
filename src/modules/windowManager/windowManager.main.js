@@ -53,7 +53,7 @@ class WindowManager {
    * @description Create a new BrowserWindow insatance
    */
   createWindow = (config = {}) => {
-    const { name, options = {}, url, devTools = false } = config;
+    const { name, options = {}, url, devTools = true } = config;
     const defaultConfig = { webPreferences: { devTools: isDev() } }
     const updatedWindowOptions = merge(defaultConfig, options);
     const windowInstance = new BrowserWindow(updatedWindowOptions);

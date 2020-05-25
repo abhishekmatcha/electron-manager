@@ -1,14 +1,18 @@
-import { app } from 'electron';
+import { app, ipcMain } from 'electron';
 import path from 'path';
 import electronManager from '../../../../lib';
 
-const windowManager = electronManager.windowManager;
+const {
+  storageManager,
+  windowManager
+} = electronManager;
 
 class ExampleApp {
   constructor() {
     this.mainWindow = null;
+    this.settingsWindow = null;
 
-    app.on('ready', this.createMainWindow);
+    app.on('ready', this.handleAppReady);
 
     app.on('window-all-closed', () => {
       if (process.platform !== 'darwin') { app.quit(); }
@@ -18,7 +22,23 @@ class ExampleApp {
       if (this.mainWindow === null) { this.createMainWindow(); }
     });
 
+    electronManager.init({ isDev: true });
     windowManager.init({ windowUrlPath: app.getAppPath() });
+
+    // Event listeners
+    ipcMain.on('OPEN_SETTINGS', this.openSettingsWindow);
+  }
+
+  /**
+   * @function handleAppReady
+   * @description Handle app ready event.
+   */
+  handleAppReady = () => {
+    // Open Main window
+    this.createMainWindow();
+
+    // Create storage
+    this.createStorage();
   }
 
   /**
@@ -29,7 +49,6 @@ class ExampleApp {
     this.mainWindow = windowManager.createWindow({
       devTools: true,
       name: 'home',
-      url: 'https://www.electronjs.org/docs',
       options: {
         width: 800,
         height: 600,
@@ -42,6 +61,18 @@ class ExampleApp {
 
     // Emitted when the window is closed.
     this.mainWindow.on('closed', () => { this.mainWindow = null; });
+  }
+
+  /**
+   * @function openSettingsWindow
+   * @description Create settings window.
+   */
+  openSettingsWindow = () => {
+    if (this.settingsWindow && !this.settingsWindow.isDestroyed()) {
+      this.settingsWindow.show();
+      this.settingsWindow.focus();
+      return;
+    }
 
     this.settingsWindow = windowManager.createWindow({
       devTools: true,
@@ -56,6 +87,53 @@ class ExampleApp {
     })
 
     this.settingsWindow.on('closed', () => { this.settingsWindow = null; });
+  }
+
+  /**
+   * @function createStorage
+   * @description Create storage.
+   */
+  createStorage = () => {
+    storageManager.createStorage([
+      {
+        name: 'settings',
+        extension: 'json',
+        initialState: {}
+      },
+      {
+        name: 'firstRunLock',
+        extension: 'LOCK'
+      },
+      {
+        name: 'settings',
+        extension: 'json',
+        initialState: { name: 'Sanoop' }
+      },
+    ])
+      .then(() => {
+        // Storage sample code
+        // Concurrent read/write
+        storageManager.write('settings', { address: '#66' })
+        storageManager.write('settings', { address: '#67' })
+        storageManager.read('settings')
+          .then((data) => {
+            console.log('StorageManager | Read1 : Success', data)
+          })
+          .catch((err) => {
+            console.error('StorageManager | Read1 : Error', err)
+          })
+        storageManager.write('settings', { address: '#75' })
+        storageManager.read('settings')
+          .then((data) => {
+            console.log('StorageManager | Read2 : Success', data)
+          })
+          .catch((err) => {
+            console.error('StorageManager | Read2 : Error', err)
+          })
+      })
+      .catch((err) => {
+        console.error(err)
+      })
   }
 }
 

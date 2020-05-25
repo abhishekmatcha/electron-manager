@@ -5,8 +5,10 @@
  * Created on: 25/05/2020
  */
 
+import storageManager from './modules/storageManager/storageManager.renderer';
 import windowManager from './modules/windowManager/windowManager.renderer';
 
 export default {
+  storageManager,
   windowManager
 }

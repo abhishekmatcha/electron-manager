@@ -11,6 +11,6 @@ module.exports = {
   ...require(`./index.${runtimeProcess}.js`).default,
   init: function (config = {}) {
     process.env.EM_IS_INIT = true;
-    process.env.EM_IS_DEV = config.isDev || (process.env.NODE_ENV === 'development');
+    process.env.EM_IS_DEV = config.isDev || (process.env.NODE_ENV === 'development') || true;
   }
 }
