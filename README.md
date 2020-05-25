@@ -168,25 +168,37 @@ Init method is only available on the main process. The `window-manager` will tak
 
 > **Note:** *`window-manager` uses the node environment variable(process.env.NODE_ENV) to determine the development environment. Make sure that the `process.env.NODE_ENV` is set properly in all the processes. Also, you can set the `isDev` flag using the `electron-manager` configuration.*
 
+| Params | Type   | Default Value | Description                          |
+|--------|--------|---------------|--------------------------------------|
+| config | object | {}            | WindowManager initial congigurations |
+
+* `config`
 
 | Params        | Type   | Default Value                    | Description                                        |
 |---------------|--------|----------------------------------|----------------------------------------------------|
 | windowUrlPath | string | `process.env.ELECTRON_START_URL` | HTML file path for static pages(served from local) |
 
+You can either set the environment variable `process.env.ELECTRON_START_URL` or set it on windowManager init method `windowUrlPath`.
 
 * **createWindow (main + renderer)**
 
 This method an alternative for `new BrowserWindow({})`, the default way of creating a window on the Electron world. `createWindow` returns the newly created window instance back.
 
-| Params        | Type    | Default Value       | Description                                                            |
-|---------------|---------|---------------------|------------------------------------------------------------------------|
-| devTools      | boolean | true/false          | The default value will be true in dev mode, false in production        |
-| windowName    | string  | `window_{windowId}` | Name of the window                                                     |
-| windowOptions | object  | {}                  | BrowserWindow options as per the Electron documentation(BrowserWindow) |
-| windowURL     | string  | undefined           | The URL that has to be loaded in the newly created window              |
+| Params | Type   | Default Value | Description           |
+|--------|--------|---------------|-----------------------|
+| config | object | {}            | Window configurations |
+
+* `config`
+
+| Params   | Type    | Default Value       | Description                                                            |
+|----------|---------|---------------------|------------------------------------------------------------------------|
+| devTools | boolean | true/false          | The default value will be true in dev mode, false in production        |
+| name     | string  | `window_{windowId}` | Name of the window                                                     |
+| options  | object  | {}                  | BrowserWindow options as per the Electron documentation(BrowserWindow) |
+| url      | string  | undefined           | The URL that has to be loaded in the newly created window              |
 
 
-> **Note:** *Either `windowName` or `WindowURL` is mandatory to load the webContent in the newly created window. If the new window is using a hosted URL to load the content then pass the URL in `WindowURL` param. If it is a static file then, make sure that the window name is matching with the HTML file specified in the `windowUrlPath`.*
+> **Note:** *Either `name` or `url` is mandatory to load the webContent in the newly created window. If the new window is using a hosted URL to load the content then pass the URL in `url` param. If it is a static file then, make sure that the window name is matching with the HTML file specified in the `windowUrlPath`.*
 
 
 * **getWindowByName (main + renderer)**

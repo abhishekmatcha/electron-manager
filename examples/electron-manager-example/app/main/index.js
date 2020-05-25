@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app } from 'electron';
 import path from 'path';
 import electronManager from '../../../../lib';
 
@@ -18,7 +18,7 @@ class ExampleApp {
       if (this.mainWindow === null) { this.createMainWindow(); }
     });
 
-    console.log('windowManager:', windowManager);
+    windowManager.init({ windowUrlPath: app.getAppPath() });
   }
 
   /**
@@ -26,37 +26,34 @@ class ExampleApp {
    * @description Create main window.
    */
   createMainWindow = () => {
-    this.mainWindow = new BrowserWindow({
-      width: 800,
-      height: 600,
-      webPreferences: {
-        nodeIntegration: true,
-        webviewTag: true
+    this.mainWindow = windowManager.createWindow({
+      devTools: true,
+      name: 'home',
+      url: 'https://www.electronjs.org/docs',
+      options: {
+        width: 800,
+        height: 600,
+        webPreferences: {
+          nodeIntegration: true,
+          webviewTag: true
+        }
       }
-    });
-
-    this.mainWindow.loadFile(path.join(app.getAppPath(), 'home.html'));
-
-    // Open the DevTools.
-    this.mainWindow.webContents.openDevTools()
+    })
 
     // Emitted when the window is closed.
     this.mainWindow.on('closed', () => { this.mainWindow = null; });
 
-    this.settingsWindow = new BrowserWindow({
-      width: 500,
-      height: 600,
-      webPreferences: {
-        nodeIntegration: true,
-        webviewTag: true
+    this.settingsWindow = windowManager.createWindow({
+      devTools: true,
+      name: 'settings',
+      options: {
+        width: 500,
+        height: 600,
+        webPreferences: {
+          nodeIntegration: true
+        }
       }
-    });
-
-    this.settingsWindow.loadFile(path.join(app.getAppPath(), 'settings.html'));
-
-    // Open the DevTools.
-    this.settingsWindow.webContents.openDevTools()
-
+    })
 
     this.settingsWindow.on('closed', () => { this.settingsWindow = null; });
   }
