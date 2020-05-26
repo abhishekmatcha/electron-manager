@@ -41,9 +41,90 @@ logger.log('This is a test message...!!!');
 
 ## Modules
 
+* **ElectronUpdater**
 * **Logger**
 * **StorageManager**
 * **WindowManager**
+
+### ElectronUpdater
+
+ElectronUpdater module is used to update the application from existing version to newer versions. It can be used in both the main process as well as the renderer process. The electronUpdater is a lightweight module in `electron-manager` which helps to update the application in production mode.
+
+> **Note:** Please use electron-builder for the build configuration. Code-signing is required for ElectronUpdater to build the application else we need to disable the appropriate flags said by the electron-builder.
+
+* **Example for basic configuration required for generic providers**
+
+```js
+  "publish": {
+    "provider": "generic",
+    "url": "please add the published url"
+  }
+  ...
+  //disable the Code-signing using the below flags
+  win {
+    "verifyUpdateCodeSignature": false
+  },
+  mac{
+    "identity": null
+  }
+```
+
+#### Methods
+
+* **init (main)**
+The ElectronUpdater module has to be initialized in the main processes.
+
+```js
+import electronManager from 'electron-manager';
+
+const { electronUpdater } = electronManager;
+...
+electronUpdater.init();
+```
+
+* **autoUpdate (main + renderer)**
+`autoUpdate` method downloads and installs the available updates.
+
+```js
+electronUpdater.autoUpdate()
+```
+
+* **checkForUpdates (main + renderer)**
+`checkForUpdates` method checks if any new updates available and returns a promise. If any update is available checkForUpdates resolves the promise, then we can make our own callbacks like showing windows or dialogue.
+
+```js
+electronUpdater.checkForUpdates()
+.then(() => {
+  // your own callback if update available
+});
+```
+* **downloadUpdates (main + renderer)**
+`downloadUpdate` method downloads the updated application and returns a Promise with the downloaded location of new version. you can even add your custom logic you want to run/show after download and before installing it.
+
+```js
+electronUpdater.downloadUpdates()
+.then((path) => {
+  console.log(path); // prints location of the new version downloaded;
+  // you can add your custom logic here
+  ...
+  electronUpdater.installUpdates();
+});
+```
+> **Note:** This method just downloads the updated version but won't install it. Please use the `installUpdates` method to install the application. If we don't install after the update it will ask to install the application after closing the current running application.
+
+* **installUpdates (main + renderer)**
+`installUpdates` method installs the updated version. It quits the application and installs the new version.
+
+```js
+electronUpdater.installUpdates();
+```
+
+* **cancelUpdate (main + renderer)**
+`cancelUpdate` method cancels the downloading of the application.
+
+```js
+electronUpdater.cancelUpdate();
+```
 
 ### Logger
 

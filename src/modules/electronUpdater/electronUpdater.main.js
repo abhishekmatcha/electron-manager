@@ -6,6 +6,7 @@
 
 import { ipcMain } from 'electron';
 import { autoUpdater, CancellationToken } from 'electron-updater';
+import { isDev } from '../../utils';
 import {
   AUTO_UPDATE,
   CHECK_FOR_UPDATES,
@@ -20,19 +21,23 @@ import {
  */
 class ElectronUpdater {
   constructor() {
-    this.started = false;
-    this.allowAutoUpdate = false;
-    this.downloadInProgress = false;
-    this.cancellationToken;
+    this._started = false;
+    this._allowAutoUpdate = false;
+    this._downloadInProgress = false;
+    this._cancellationToken;
 
     // Event listeners
-    ipcMain.handle(CHECK_FOR_UPDATES, this.checkForUpdates);
-    ipcMain.handle(DOWNLOAD_UPDATE, this.downloadUpdates);
-    ipcMain.on(CANCEL_UPDATE, this.cancelUpdate);
     ipcMain.on(AUTO_UPDATE, this.autoUpdate);
+    ipcMain.on(CANCEL_UPDATE, this.cancelUpdate);
     ipcMain.on(INSTALL_UPDATES, this.installUpdates);
-
-    this._attachEventListeners();
+    ipcMain.handle(DOWNLOAD_UPDATE, this.downloadUpdates);
+    ipcMain.handle(CHECK_FOR_UPDATES, this.checkForUpdates);
+    
+    autoUpdater.on('error', this._handleErrorOnUpdate);
+    autoUpdater.on('update-available', this._updateAvailable);
+    autoUpdater.on('update-not-available', this._updateNotFound);
+    autoUpdater.on('update-downloaded', this._handleDownloadCompleted);
+    autoUpdater.on('download-progress', this._handleDownloadInProgress);
   }
 
   /* ****************************************************************************/
@@ -44,9 +49,9 @@ class ElectronUpdater {
    * @description Initialize ElectronUpdater
    */
   init = () => {
-    if (this.started) return;
+    if (this._started) return;
 
-    this.started = true;
+    this._started = true;
   };
 
   /**
@@ -54,8 +59,8 @@ class ElectronUpdater {
    * @description Function to set the autoupdate, This automatically checks, downloads, install the updates.
    */
   autoUpdate = () => {
-    if (process.env.NODE_ENV !== "development") {
-      this.allowAutoUpdate = true;
+    if (!isDev()) {
+      this._allowAutoUpdate = true;
       this.checkForUpdates();
     } else {
       console.log(`[ElectronUpdater][autoUpdate]: autoUpdate can't be set in development mode `);
@@ -68,14 +73,14 @@ class ElectronUpdater {
    */
   checkForUpdates = () => {
     return new Promise((resolve, reject) => {
-      if (process.env.NODE_ENV !== "development") {
-        autoUpdater.autoDownload = this.allowAutoUpdate;
+      if (!isDev()) {
+        autoUpdater.autoDownload = this._allowAutoUpdate;
 
         try {
           autoUpdater
             .checkForUpdates()
             .then((updateCheckResult) => {
-              this.cancellationToken = updateCheckResult.cancellationToken;
+              this._cancellationToken = updateCheckResult.cancellationToken;
               return resolve();
             })
             .catch((exception) => {
@@ -97,8 +102,8 @@ class ElectronUpdater {
    * @description Function to download the available update.
    */
   downloadUpdates = () => {
-    if (process.env.NODE_ENV !== "development") {
-      if (this.cancellationToken) {
+    if (!isDev()) {
+      if (this._cancellationToken) {
         return this._downloadUpdate();
       } else {
         this.checkForUpdates()
@@ -120,7 +125,7 @@ class ElectronUpdater {
    * @description Function to install the downloaded update.
    */
   installUpdates = () => {
-    if (!this.downloadInProgress) {
+    if (!this._downloadInProgress) {
       autoUpdater.quitAndInstall();
       process.exit(0);
     } else {
@@ -133,8 +138,8 @@ class ElectronUpdater {
    * @description Function to cancel the installing update.
    */
   cancelUpdate = () => {
-    if (process.env.NODE_ENV !== "development" && this.cancellationToken) {
-      this.cancellationToken.cancel();
+    if (!isDev() && this._cancellationToken) {
+      this._cancellationToken.cancel();
     } else {
       console.log(`[ElectronUpdater][cancelUpdates]: Unable to cancel updates`);
     }
@@ -150,10 +155,10 @@ class ElectronUpdater {
    */
   _downloadUpdate = () => {
     return new Promise((resolve, reject) => {
-      this.cancellationToken = new CancellationToken();
+      this._cancellationToken = new CancellationToken();
 
       autoUpdater
-        .downloadUpdate(this.cancellationToken)
+        .downloadUpdate(this._cancellationToken)
         .then((data) => {
           return resolve(data);
         })
@@ -167,39 +172,56 @@ class ElectronUpdater {
   };
 
   /**
-   * @function _attachEventListeners
-   * @description Attaches the auto update event listeners.
+   * @function _updateNotFound
+   * @description Event handler for update-not-available
    */
-  _attachEventListeners = () => {
-    autoUpdater.on("update-available", (info) => {
-      console.log(`[ElectronUpdater][update-available]: Update available show window ${info.version}`);
-    });
+  _updateNotFound = () =>{
+    this._downloadInProgress = false;
 
-    autoUpdater.on("update-not-available", () => {
-      this.downloadInProgress = false;
-      console.log("[ElectronUpdater]: No update Available");
-    });
+    console.log("[ElectronUpdater]: No update Available");
+  }
 
-    autoUpdater.on("error", (event) => {
-      this.downloadInProgress = false;
-      console.error(`[ElectronUpdater][error]: ${event}`);
-    });
+  /**
+  * @function _updateAvailable
+  * @description Event handler for update-available
+  */
+  _updateAvailable = (info) => {
+    console.log(`[ElectronUpdater][update-available]: Update available show window ${info.version}`);
+  }
 
-    autoUpdater.on("download-progress", (progressInfo) => {
-      this.downloadInProgress = true;
-      console.log(`[ElectronUpdater][download-progress]: Download Progress : ${progressInfo.percent}`);
-    });
+  /**
+   * @function _handleErrorOnUpdate
+   * @description Event handler for error event
+   */
+  _handleErrorOnUpdate = (event) => {
+    this._downloadInProgress = false;
 
-    autoUpdater.on("update-downloaded", () => {
-      this.downloadInProgress = false;
-      console.log("[ElectronUpdater][update-downloaded]: Download compleated");
+    console.error(`[ElectronUpdater][error]: ${event}`);
+  }
 
-      if (this.allowAutoUpdate) {
-        autoUpdater.quitAndInstall();
-        process.exit(0);
-      }
-    });
-  };
+  /**
+   * @function _handleDownloadInProgress
+   * @description Event handler for download-progress
+   */
+  _handleDownloadInProgress = (progressInfo) => {
+    this._downloadInProgress = true;
+
+    console.log(`[ElectronUpdater][download-progress]: Download Progress : ${progressInfo.percent}`);
+  }
+
+  /**
+   * @function _handleDownloadCompleted
+   * @description Event handler for download-completed
+   */
+  _handleDownloadCompleted = () => {
+    this._downloadInProgress = false;
+    console.log("[ElectronUpdater][update-downloaded]: Download compleated");
+
+    if (this._allowAutoUpdate) {
+      autoUpdater.quitAndInstall();
+      process.exit(0);
+    }
+  }
 }
 
 export default new ElectronUpdater();
