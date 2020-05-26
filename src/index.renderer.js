@@ -5,11 +5,13 @@
  * Created on: 25/05/2020
  */
 
+import electronUpdater from './modules/electronUpdater/electronUpdater.renderer';
 import logger from './modules/logger/logger.renderer';
 import storageManager from './modules/storageManager/storageManager.renderer';
 import windowManager from './modules/windowManager/windowManager.renderer';
 
 export default {
+  electronUpdater,
   logger,
   storageManager,
   windowManager
