@@ -5,7 +5,7 @@
  * Created on: 12/05/2020
  */
 
-import { BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import merge from 'lodash.merge';
 import path from 'path';
 import URL from 'url';
@@ -21,6 +21,8 @@ class WindowManager {
   constructor() {
     this._started = false;
     this._windows = new Map();
+    this._enableDevTools = false;
+    this._windowUrlPath = process.env.ELECTRON_START_URL || path.join(app.getAppPath(), `dist/renderer`);
 
     // Event listeners
     ipcMain.on(WM_CREATE_WINDOW, this._createWindow);
@@ -43,8 +45,15 @@ class WindowManager {
 
     this._started = true;
 
-    // Set window URL path
-    if (config.windowUrlPath) process.env.ELECTRON_START_URL = config.windowUrlPath;
+    // Add Default configs
+    const {
+      enableDevTools = false,
+      windowUrlPath = path.join(app.getAppPath(), `dist/renderer`)
+    } = config;
+
+    // Set default configurations
+    this._enableDevTools = enableDevTools;
+    this._windowUrlPath = process.env.ELECTRON_START_URL || windowUrlPath;
   }
 
   /**
@@ -54,7 +63,7 @@ class WindowManager {
    */
   createWindow = (config = {}) => {
     const { name, options = {}, url, devTools = true } = config;
-    const defaultConfig = { webPreferences: { devTools: isDev() } }
+    const defaultConfig = { webPreferences: { devTools: (isDev() || this._enableDevTools) } }
     const updatedWindowOptions = merge(defaultConfig, options);
     const windowInstance = new BrowserWindow(updatedWindowOptions);
     const windowId = windowInstance.id;
@@ -63,11 +72,11 @@ class WindowManager {
       if (url) {
         windowInstance.loadURL(url);
       } else if (name) {
-        let startURL = process.env.ELECTRON_START_URL + `/${name}.html`;
+        let startURL = this._windowUrlPath + `/${name}.html`;
 
         if (!isDev() || startURL.indexOf('localhost') < 0) {
           startURL = URL.format({
-            pathname: path.join(`${process.env.ELECTRON_START_URL}/${name}.html`),
+            pathname: path.join(`${this._windowUrlPath}/${name}.html`),
             protocol: 'file:',
             slashes: true
           });

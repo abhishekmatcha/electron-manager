@@ -9,7 +9,7 @@ import fs from 'fs-extra';
 import os, { EOL } from 'os';
 import path from 'path';
 import { getUuid } from 'utils';
-import { ipcMain, app, screen } from 'electron';
+import { ipcMain, app } from 'electron';
 import { LOGGER_GET_UER_CONFIG, LOGGER_WRITE_TO_FILE, LOG_TYPES } from './constants';
 import { isInitialized, generateDateTimeFormat, getFormattedString } from './utils';
 
@@ -235,8 +235,7 @@ class Logger {
     const defaultHeader = {
       OSName: os.platform(),
       OSRelease: os.release(),
-      CPUArchitecture: os.arch(),
-      ScreenResolution: `${screen.getPrimaryDisplay().workArea.height} x ${screen.getPrimaryDisplay().workArea.width}`
+      CPUArchitecture: os.arch()
     };
     const fileHeader = this.fileHeader || defaultHeader;
     let fileHeaderStr = `${EOL}`;

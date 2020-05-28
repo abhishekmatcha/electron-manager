@@ -5,6 +5,8 @@
  * Created on: 12/05/2020
  */
 
+import { app } from 'electron';
+import path from 'path';
 import { INTERNAL_CHANNEL_PREFIX } from 'constants';
 
 // Internal channels
