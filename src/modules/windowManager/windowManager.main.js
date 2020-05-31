@@ -15,11 +15,15 @@ import * as CONSTANTS from './constants';
 class WindowManager {
   constructor() {
     this._started = false;
+    this._windows = new Map();
+
+    // Config params
     this._enableDevTools = false;
     this._windowUrlPath = process.env.ELECTRON_START_URL || path.join(app.getAppPath(), `dist/renderer`);
 
     // Internal IPC event listeners
     ipcMain.on(CONSTANTS.WM_CREATE_WINDOW, this._createWindow);
+    ipcMain.on(CONSTANTS.WM_GET_WINDOWID_BY_NAME, (event, windowName) => { event.returnValue = this.getWindowIdByName(windowName) });
   }
 
   /* ****************************************************************************/
@@ -81,7 +85,46 @@ class WindowManager {
     // Open devTools if enabled
     if (devTools) windowInstance.webContents.openDevTools();
 
+    // Register window on WindowManager
+    this._add(windowId, { id: windowId, name: (name || `window_${windowId}`) });
+
+    // Unregister window from WindowManager
+    if (windowInstance && !windowInstance.isDestroyed()) {
+      windowInstance.on('close', () => {
+        this._remove(windowId)
+      })
+    }
+
     return windowInstance;
+  }
+
+  /**
+   * @function getWindowByName
+   * @param {string} windowName - Window name
+   * @description Get window instance using window name
+   * @returns {BrowserWindow} BrowserWindow instance
+   */
+  getWindowByName = (windowName) => {
+    if (!windowName) return null;
+
+    const windows = Array.from(this._windows.values());
+    const window = windows.find(w => w.name === windowName);
+
+    if (window) return BrowserWindow.fromId(window.id);
+
+    return null;
+  }
+
+  /**
+   * @function getWindowIdByName
+   * @param {string} windowName - Window name
+   * @description Get window id using window name
+   * @returns {number} Window Id
+   */
+  getWindowIdByName = (windowName) => {
+    const window = this.getWindowByName(windowName);
+
+    return window ? window.id : null;
   }
 
   /* ****************************************************************************/
@@ -99,6 +142,29 @@ class WindowManager {
     const window = this.createWindow(config)
 
     evt.returnValue = window ? window.id : null;
+  }
+
+  /**
+   * @function _add
+   * @param {number} windowId - BrowserWindow id
+   * @param {object} data - Windoe details
+   * @description Add new window in WindowManager.
+   */
+  _add = (windowId, data) => {
+    if (this._windows.has(windowId)) return;
+
+    this._windows.set(windowId, data);
+  }
+
+  /**
+   * @function _remove
+   * @param {number} windowId - BrowserWindow id
+   * @description Remove window from WindowManager.
+   */
+  _remove = (windowId) => {
+    if (!this._windows.has(windowId)) return;
+
+    this._windows.delete(windowId);
   }
 }
 

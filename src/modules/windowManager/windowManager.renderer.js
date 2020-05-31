@@ -25,6 +25,30 @@ class WindowManager {
 
     return BrowserWindow.fromId(windowId);
   }
+
+  /**
+   * @function getWindowByName
+   * @param {string} windowName - Window name
+   * @description Get window instance using window name
+   * @returns {BrowserWindow} BrowserWindow instance
+   */
+  getWindowByName = (windowName) => {
+    if (!windowName) return null;
+
+    const windowId = ipcRenderer.sendSync(CONSTANTS.WM_GET_WINDOWID_BY_NAME, windowName);
+
+    return BrowserWindow.fromId(windowId);
+  }
+
+  /**
+   * @function getWindowIdByName
+   * @param { string } windowName: Window name
+   * @description Get window id using window name
+   * @returns {number} Window Id
+   */
+  getWindowIdByName = (windowName) => {
+    return ipcRenderer.sendSync(CONSTANTS.WM_GET_WINDOWID_BY_NAME, windowName);
+  }
 }
 
 export default new WindowManager();

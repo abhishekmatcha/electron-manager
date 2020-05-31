@@ -345,7 +345,22 @@ This method is an alternative for `new BrowserWindow({})`, the default way of cr
  
 > **Note:** *Either `name` or `url` is mandatory to load the webContent in the newly created window. If the new window is using a hosted URL to load the content then pass the URL in `url` param. If it is a static file then, make sure that the window name is matching with the HTML file specified in the `windowUrlPath`.*
  
- 
+* **getWindowByName (main + renderer)**
+
+Get the `BroserWindow` instance by its name. If there are multiple windows with the same name then, it will return the first instance from the window list.
+
+| Params        | Type   | Default Value | Description        |
+|---------------|--------|-------------- |--------------------|
+| windowName(*) | string | undefined     | Name of the window |
+
+* **getWindowIdByName (main + renderer)**
+
+Returns the `BroserWindow` id.
+
+| Params        | Type   | Default Value | Description        |
+|---------------|--------|---------------|--------------------|
+| windowName(*) | string | undefined     | Name of the window |
+
 ## License
  
 Licensed under [MIT](https://github.com/hashedin/electron-manager/blob/master/LICENSE)
