@@ -6,13 +6,7 @@
  */
 
 import { ipcRenderer } from "electron";
-import {
-  AUTO_UPDATE,
-  CHECK_FOR_UPDATES,
-  CANCEL_UPDATE,
-  DOWNLOAD_UPDATE,
-  INSTALL_UPDATES,
-} from "./constants";
+import * as CONSTANTS from "./constants";
 
 class ElectronUpdater {
   /* ****************************************************************************/
@@ -25,7 +19,7 @@ class ElectronUpdater {
    * @returns {Promise} resolve if update is available, else reject.
    */
   checkForUpdates = () => {
-    return ipcRenderer.invoke(CHECK_FOR_UPDATES);
+    return ipcRenderer.invoke(CONSTANTS.CHECK_FOR_UPDATES);
   };
 
   /**
@@ -34,7 +28,7 @@ class ElectronUpdater {
    * @returns {Promise} resolve if starts the download, else reject.
    */
   downloadUpdates = () => {
-    return ipcRenderer.invoke(DOWNLOAD_UPDATE);
+    return ipcRenderer.invoke(CONSTANTS.DOWNLOAD_UPDATE);
   };
 
   /**
@@ -42,7 +36,7 @@ class ElectronUpdater {
    * @description Function to install the downloaded update.
    */
   installUpdates = () => {
-    ipcRenderer.send(INSTALL_UPDATES);
+    ipcRenderer.send(CONSTANTS.INSTALL_UPDATES);
   };
 
   /**
@@ -50,7 +44,7 @@ class ElectronUpdater {
    * @description Function to cancel the installing update.
    */
   cancelUpdate = () => {
-    ipcRenderer.send(CANCEL_UPDATE);
+    ipcRenderer.send(CONSTANTS.CANCEL_UPDATE);
   };
 
   /**
@@ -58,7 +52,7 @@ class ElectronUpdater {
    * @description Function to set the autoupdate, This automatically checks, downloads, install the updates.
    */
   autoUpdate = () => {
-    ipcRenderer.send(AUTO_UPDATE);
+    ipcRenderer.send(CONSTANTS.AUTO_UPDATE);
   };
 }
 

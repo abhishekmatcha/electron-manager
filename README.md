@@ -142,8 +142,7 @@ The logger module has to be initialized in respective processes with a relevant 
 |---------------|---------|-----------------|-----------------------------------------------------------------|
 | cleanLogs     | boolean | true            | Clean log files periodically                                    |
 | logFolderPath | string  | `userData/logs` | Application logs folder path                                    |
-| logPeriod     | number  | 30              | Logfile's lifespan in days                                      |
-| proxifyConsol | boolean | false           | Override all console statements with proper logger statements.  |
+| logPeriod     | number  | 7               | Logfile's lifespan in days                                      |
 | setFileHeader | boolean | true            | Add file header in each log file                                |
 | writeToFile   | boolean | true            | Write log entries into a system file                            |
  
@@ -156,20 +155,15 @@ const { logger } = electronManager;
  
 ...
 logger.init({
- proxifyConsol: true,
- logPeriod: 7
+  cleanLogs: false
+ logPeriod: 10
 });
 ```
  
 * **error (main + renderer)**
  
-`error` method is a proxy of `console.error`. If `proxifyConsol: true`, then all `console.error` statements would be proxied to `logger.error`. Also, all the logger statement properties will be applicable to the console statement as well. This would be similar for below methods as well.
- 
 ```js
 logger.error('This is an error message!');
- 
-// If `proxifyConsol: true`, then you can also use the console statements
-console.error('This is an error message!');
 ```
  
 * **info (main + renderer)**
@@ -305,9 +299,6 @@ storageManager.write('settings', {systemSettings: false})
 WindowManager can be used for creating and managing windows in an Electron application. WindowManager internally handles the environmental changes so that environment-specific configurations are not required. This module will handle the following use-cases:
  
 * *Creating new windows*
-* *Keep a track of opened windows*
-* *Keep a track of recently closed windows*
-* *Tab - Window association*
 * *Open window using both URL and static file path*
 * *Maintaining parent-child relation*
  
@@ -353,51 +344,6 @@ This method is an alternative for `new BrowserWindow({})`, the default way of cr
  
  
 > **Note:** *Either `name` or `url` is mandatory to load the webContent in the newly created window. If the new window is using a hosted URL to load the content then pass the URL in `url` param. If it is a static file then, make sure that the window name is matching with the HTML file specified in the `windowUrlPath`.*
- 
- 
-* **getWindowByName (main + renderer)**
- 
-Get the `BroserWindow` instance by its name. If there are multiple windows with the same name, it will return the first instance from the window list.
- 
-| Params        | Type   | Default Value | Description        |
-|---------------|--------|-------------- |--------------------|
-| windowName(*) | string | undefined     | Name of the window |
- 
- 
-* **getWindowsByName (main + renderer)**
- 
-Returns a list of `BroserWindow` instances by the given window name. Returns an empty array if there are no matching window instances.
- 
-| Params        | Type   | Default Value | Description        |
-|---------------|--------|---------------|--------------------|
-| windowName(*) | string | undefined     | Name of the window |
- 
- 
-* **getAllWindowIds (main + renderer)**
- 
-Returns a list of window ids of all opened windows.
- 
- 
-* **getAllWindowNames (main + renderer)**
- 
-Returns a list of window names of all opened windows.
- 
- 
-* **getWindowIdByName (main + renderer)**
- 
-Returns the `BroserWindow` id.
- 
-| Params        | Type   | Default Value | Description        |
-|---------------|--------|---------------|--------------------|
-| windowName(*) | string | undefined     | Name of the window |
- 
-* getWindowIdsByName (main + renderer)
- 
-Returns a list of `BroserWindow` ids matching the name.
- 
-| Params        | Type   | Default Value | Description        |
-|---------------|--------|---------------|--------------------|
-| windowName(*) | string | undefined     | Name of the window |
  
  
 ## License

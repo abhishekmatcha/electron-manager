@@ -8,13 +8,7 @@
 import { ipcMain } from 'electron';
 import { autoUpdater, CancellationToken } from 'electron-updater';
 import { isDev } from '../../utils';
-import {
-  AUTO_UPDATE,
-  CHECK_FOR_UPDATES,
-  CANCEL_UPDATE,
-  DOWNLOAD_UPDATE,
-  INSTALL_UPDATES,
-} from './constants';
+import * as CONSTANTS from './constants';
 
 class ElectronUpdater {
   constructor() {
@@ -24,11 +18,11 @@ class ElectronUpdater {
     this._cancellationToken;
 
     // Internal IPC event listeners
-    ipcMain.on(AUTO_UPDATE, this.autoUpdate);
-    ipcMain.on(CANCEL_UPDATE, this.cancelUpdate);
-    ipcMain.on(INSTALL_UPDATES, this.installUpdates);
-    ipcMain.handle(DOWNLOAD_UPDATE, this.downloadUpdates);
-    ipcMain.handle(CHECK_FOR_UPDATES, this.checkForUpdates);
+    ipcMain.on(CONSTANTS.AUTO_UPDATE, this.autoUpdate);
+    ipcMain.on(CONSTANTS.CANCEL_UPDATE, this.cancelUpdate);
+    ipcMain.on(CONSTANTS.INSTALL_UPDATES, this.installUpdates);
+    ipcMain.handle(CONSTANTS.DOWNLOAD_UPDATE, this.downloadUpdates);
+    ipcMain.handle(CONSTANTS.CHECK_FOR_UPDATES, this.checkForUpdates);
 
     // autoUpdater event listeners
     autoUpdater.on('error', this._handleErrorOnUpdate);
