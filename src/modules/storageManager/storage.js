@@ -75,7 +75,7 @@ class Storage {
             this._processReadWriteQueue();
           })
           .catch((err) => {
-            console.log('Failed to read data', err)
+            console.log('[Storage] - Failed to read data', err)
             readWriteQueueItem.reject();
             this._readWriteQueue.shift();
             this._processReadWriteQueue();
@@ -88,7 +88,7 @@ class Storage {
             this._processReadWriteQueue();
           })
           .catch((err) => {
-            console.log('Failed to wite data', err)
+            console.log('[Storage] - Failed to wite data', err)
             readWriteQueueItem.reject();
             this._readWriteQueue.shift();
             this._processReadWriteQueue();
@@ -110,7 +110,7 @@ class Storage {
           this._type === 'json' ? resolve(JSON.parse(data)) : resolve(data);
         })
         .catch(err => {
-          console.error(`[StorageManager]: Failed to read data from ${this._location}: ${err}`);
+          console.error(`[Storage] -  Failed to read data from ${this._location}: ${err}`);
           reject()
         })
     })
@@ -124,7 +124,7 @@ class Storage {
    */
   _write = (rawData) => {
     const tempPath = `${this._location}.${uuid().replace(/-/g, '')}`;
-    const data = JSON.stringify(rawData);
+    const data = this._type === 'json' ? JSON.stringify(rawData) : rawData;
 
     return Promise.resolve()
       .then(() => fs.open(tempPath, 'w'))
@@ -141,7 +141,7 @@ class Storage {
       .catch((err) => {
         try { fs.remove(tempPath); } catch (ex) { /* no-op */ }
 
-        console.log(`[StorageManager]: Failed to write data to file: ${this._name}: ${err}`);
+        console.log(`[Storage] - Failed to write data to file: ${this._name}: ${err}`);
       });
   }
 }

@@ -1,6 +1,6 @@
 /**
  * @class StorageManager
- * @description StorageManager for main process
+ * @description StorageManager module for main process
  * @author Sanoop Jose T <sanoop.jose@hashedin.com>
  * Created on: 18/05/2020
  */
@@ -10,7 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import validFilename from 'valid-filename';
 import Storage from './storage';
-import { SM_CREATE_STORAGE, SM_READ_DATA, SM_WRITE_DATA } from './constants';
+import * as CONSTANTS from './constants';
 
 class StorageManager {
   constructor() {
@@ -18,10 +18,10 @@ class StorageManager {
     this._storageLocation = app.getPath('userData');
     this._storages = new Map();
 
-    // Event listeners
-    ipcMain.handle(SM_CREATE_STORAGE, (evt, config = {}) => { return this.createStorage(config) });
-    ipcMain.handle(SM_WRITE_DATA, (evt, storageName, data) => { return this.write(storageName, data) });
-    ipcMain.handle(SM_READ_DATA, (evt, storageName) => { return this.read(storageName) });
+    // Internal IPC event listeners
+    ipcMain.handle(CONSTANTS.SM_CREATE_STORAGE, (evt, config = {}) => { return this.createStorage(config) });
+    ipcMain.handle(CONSTANTS.SM_WRITE_DATA, (evt, storageName, data) => { return this.write(storageName, data) });
+    ipcMain.handle(CONSTANTS.SM_READ_DATA, (evt, storageName) => { return this.read(storageName) });
   }
 
   /* ****************************************************************************/
@@ -31,7 +31,7 @@ class StorageManager {
   /**
    * @function init
    * @param { object } config: Initial configuration object
-   * @description Initialize StorageManager
+   * @description Initialize StorageManager module
    */
   init = (config = {}) => {
     if (this._started) return;
@@ -43,8 +43,8 @@ class StorageManager {
 
   /**
    * @function createStorage
-   * @param { object } config: Initial configuration object
-   * @description Initialize StorageManager
+   * @param {array/object} config: Initial configuration array/object
+   * @description Create a file storage on local disk
    */
   createStorage = (configs = []) => {
     return new Promise((resolve, reject) => {
@@ -56,7 +56,7 @@ class StorageManager {
           configs = [configs];
         }
       } else {
-        console.error(`[storageManager][createStorage]: Invalid type: ${typeof configs}. configuration should be an array or object.`);
+        console.error(`[storageManager:createStorage] - Invalid type: ${typeof configs}. configuration should be an array or object.`);
 
         return reject();
       }
@@ -81,11 +81,11 @@ class StorageManager {
               storagePromises.push(this._createLocalStorage(config));
             }
           } else {
-            console.error(`[StorageManager]: Invalid file name: ${name}`);
+            console.error(`[StorageManager] - Invalid file name: ${name}`);
             return reject();
           }
         } else {
-          console.error(`[storageManager][createStorage]: Invalid type: ${typeof config}${Array.isArray(config) ? '[Array]' : ''}. configuration should be an object.`);
+          console.error(`[storageManager:createStorage] - Invalid type: ${typeof config}${Array.isArray(config) ? '[Array]' : ''}. configuration should be an object.`);
           return reject();
         }
       })
@@ -107,11 +107,11 @@ class StorageManager {
             })
 
             if (rejected.length) {
-              console.log(`[storageManager][createStorage]: Failed to create Storages: ${rejected}`);
+              console.log(`[storageManager:createStorage] - Failed to create Storages: ${rejected}`);
             }
 
             if (fulfilled.length) {
-              console.log(`[storageManager][createStorage]: Storages created successfully: ${fulfilled}`);
+              console.log(`[storageManager:createStorage] - Storages created successfully: ${fulfilled}`);
               resolve();
             } else {
               reject();
@@ -137,7 +137,7 @@ class StorageManager {
           .then((data) => { resolve(data); })
           .catch((err) => { reject(); })
       } else {
-        console.error(`No storage with the name ${storageName} exists`);
+        console.error(`[storageManager:read] - No storage with the name ${storageName} exists`);
         reject();
       }
     })
@@ -158,7 +158,7 @@ class StorageManager {
           .then((res) => { resolve(res); })
           .catch((err) => { reject(); })
       } else {
-        console.error(`No storage with the name ${storageName} exists`);
+        console.error(`[storageManager:write] storage with the name ${storageName} exists`);
         reject();
       }
     })
@@ -198,7 +198,7 @@ class StorageManager {
           resolve(name);
         });
       } catch (err) {
-        console.error(`[StorageManager]: Failed to write data into ${storagePath}: ${err}`);
+        console.error(`[StorageManager] - Failed to write data into ${storagePath}: ${err}`);
         reject();
       }
     })

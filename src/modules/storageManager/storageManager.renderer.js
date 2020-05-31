@@ -1,12 +1,12 @@
 /**
  * @class StorageManager
- * @description StorageManager for renderer process
+ * @description StorageManager module for renderer process
  * @author Sanoop Jose T <sanoop.jose@hashedin.com>
  * Created on: 18/05/2020
  */
 
 import { ipcRenderer } from 'electron';
-import { SM_CREATE_STORAGE, SM_READ_DATA, SM_WRITE_DATA } from './constants';
+import * as CONSTANTS from './constants';
 
 class StorageManager {
   /* ****************************************************************************/
@@ -19,7 +19,7 @@ class StorageManager {
    * @description Initialize StorageManager
    */
   createStorage = (configs = []) => {
-    return ipcRenderer.invoke(SM_CREATE_STORAGE, configs);
+    return ipcRenderer.invoke(CONSTANTS.SM_CREATE_STORAGE, configs);
   }
 
   /**
@@ -29,7 +29,7 @@ class StorageManager {
    * @description Write data to local file
    */
   write = (storageName, data) => {
-    return ipcRenderer.invoke(SM_WRITE_DATA, storageName, data);
+    return ipcRenderer.invoke(CONSTANTS.SM_WRITE_DATA, storageName, data);
   }
 
   /**
@@ -38,7 +38,7 @@ class StorageManager {
    * @description Read data from the file storage
    */
   read = (storageName) => {
-    return ipcRenderer.invoke(SM_READ_DATA, storageName);
+    return ipcRenderer.invoke(CONSTANTS.SM_READ_DATA, storageName);
   }
 }
 

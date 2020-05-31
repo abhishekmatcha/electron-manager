@@ -1,5 +1,5 @@
 /**
- * @file constants.js
+ * @file storageManager/constants.js
  * @description StorageManager constants
  * @author Sanoop Jose T <sanoop.jose@hashedin.com>
  * Created on: 18/05/2020
