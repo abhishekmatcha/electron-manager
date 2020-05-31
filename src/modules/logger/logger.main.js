@@ -8,7 +8,7 @@
 import fs from 'fs-extra';
 import os, { EOL } from 'os';
 import path from 'path';
-import { getUuid } from 'utils';
+import { uuid } from 'uuidv4';
 import { ipcMain, app } from 'electron';
 import { LOGGER_GET_UER_CONFIG, LOGGER_WRITE_TO_FILE, LOG_TYPES } from './constants';
 import { isInitialized, generateDateTimeFormat, getFormattedString } from './utils';
@@ -190,7 +190,7 @@ class Logger {
       fs.mkdirSync(this._logFolderPath);
     }
 
-    return path.join(this._logFolderPath, `${generateDateTimeFormat()}_${getUuid()}.log`);
+    return path.join(this._logFolderPath, `${generateDateTimeFormat()}_${uuid()}.log`);
   }
 
   /**

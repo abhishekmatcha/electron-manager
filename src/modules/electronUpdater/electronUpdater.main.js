@@ -1,7 +1,8 @@
 /**
- * @file ElectronUpdater Main
- * Created on: 22/05/2020
+ * @file electronUpdater.main.js
+ * @description electronUpdater main module
  * @author Abhishek MS <abhishek.ms@hashedin.com>
+ * Created on: 22/05/2020
  */
 
 import { ipcMain } from 'electron';
@@ -15,10 +16,6 @@ import {
   INSTALL_UPDATES,
 } from './constants';
 
-/**
- * @class ElectronUpdater
- * @description It is a wrapper on autoupdater, we can download and install the updated versions
- */
 class ElectronUpdater {
   constructor() {
     this._started = false;
@@ -26,18 +23,24 @@ class ElectronUpdater {
     this._downloadInProgress = false;
     this._cancellationToken;
 
-    // Event listeners
+    // Internal IPC event listeners
     ipcMain.on(AUTO_UPDATE, this.autoUpdate);
     ipcMain.on(CANCEL_UPDATE, this.cancelUpdate);
     ipcMain.on(INSTALL_UPDATES, this.installUpdates);
     ipcMain.handle(DOWNLOAD_UPDATE, this.downloadUpdates);
     ipcMain.handle(CHECK_FOR_UPDATES, this.checkForUpdates);
-    
+
+    // autoUpdater event listeners
     autoUpdater.on('error', this._handleErrorOnUpdate);
     autoUpdater.on('update-available', this._updateAvailable);
     autoUpdater.on('update-not-available', this._updateNotFound);
     autoUpdater.on('update-downloaded', this._handleDownloadCompleted);
     autoUpdater.on('download-progress', this._handleDownloadInProgress);
+
+    // Electron Updater will only work on production mode 
+    if (isDev()) {
+      console.warn('[ElectronUpdater] - Electron updater features will be disabled in the development environment');
+    }
   }
 
   /* ****************************************************************************/
@@ -46,7 +49,7 @@ class ElectronUpdater {
 
   /**
    * @function init
-   * @description Initialize ElectronUpdater
+   * @description Initialize electronUpdater main module
    */
   init = () => {
     if (this._started) return;
@@ -59,12 +62,8 @@ class ElectronUpdater {
    * @description Function to set the autoupdate, This automatically checks, downloads, install the updates.
    */
   autoUpdate = () => {
-    if (!isDev()) {
-      this._allowAutoUpdate = true;
-      this.checkForUpdates();
-    } else {
-      console.log(`[ElectronUpdater][autoUpdate]: autoUpdate can't be set in development mode `);
-    }
+    this._allowAutoUpdate = true;
+    this.checkForUpdates();
   };
 
   /**
@@ -73,27 +72,23 @@ class ElectronUpdater {
    */
   checkForUpdates = () => {
     return new Promise((resolve, reject) => {
-      if (!isDev()) {
-        autoUpdater.autoDownload = this._allowAutoUpdate;
+      // Electron Updater will only work on production mode 
+      if (isDev()) return reject();
 
-        try {
-          autoUpdater
-            .checkForUpdates()
-            .then((updateCheckResult) => {
-              this._cancellationToken = updateCheckResult.cancellationToken;
-              return resolve();
-            })
-            .catch((exception) => {
-              throw exception;
-            });
-        } catch (err) {
-          console.error(`[ElectronUpdater][checkForUpdates]: Unable to check for update: \n${err.message}`);
-          return reject();
-        }
-      } else {
-        console.log(`[ElectronUpdater][checkForUpdats]: autoUpdates wont work in development mode `);
-        return reject();
-      }
+      // Set auto download feature in autoUpdater
+      autoUpdater.autoDownload = this._allowAutoUpdate;
+
+      // Check for updates
+      autoUpdater
+        .checkForUpdates()
+        .then((res) => {
+          this._cancellationToken = res.cancellationToken;
+          resolve();
+        })
+        .catch((err) => {
+          console.error(`[ElectronUpdater:checkForUpdates] - Error while checking for update: ${err}`);
+          reject();
+        });
     });
   };
 
@@ -102,22 +97,22 @@ class ElectronUpdater {
    * @description Function to download the available update.
    */
   downloadUpdates = () => {
-    if (!isDev()) {
+    return new Promise((resolve, reject) => {
+      // Electron Updater will only work on production mode 
+      if (isDev()) return reject();
+
       if (this._cancellationToken) {
-        return this._downloadUpdate();
+        return this._downloadUpdates();
       } else {
         this.checkForUpdates()
           .then(() => {
-            return this._downloadUpdate();
+            return this._downloadUpdates();
           })
-          .catch(() => {
-            return Promise.reject();
+          .catch((err) => {
+            return reject(err);
           });
       }
-    } else {
-      console.log(`[ElectronUpdater][downloadUpdates]: Unable to download in development mode `);
-      return Promise.reject();
-    }
+    });
   };
 
   /**
@@ -125,11 +120,14 @@ class ElectronUpdater {
    * @description Function to install the downloaded update.
    */
   installUpdates = () => {
+    // Electron Updater will only work on production mode 
+    if (isDev()) return;
+
     if (!this._downloadInProgress) {
       autoUpdater.quitAndInstall();
       process.exit(0);
     } else {
-      console.log(`[ElectronUpdater][installUpdates]: Currently download is in progress, please call this method after downloading the update`);
+      console.log('[ElectronUpdater:installUpdates] - Download is in progress, please install after downloading the update');
     }
   };
 
@@ -138,10 +136,13 @@ class ElectronUpdater {
    * @description Function to cancel the installing update.
    */
   cancelUpdate = () => {
-    if (!isDev() && this._cancellationToken) {
+    // Electron Updater will only work on production mode 
+    if (isDev()) return;
+
+    if (this._cancellationToken) {
       this._cancellationToken.cancel();
     } else {
-      console.log(`[ElectronUpdater][cancelUpdates]: Unable to cancel updates`);
+      console.log(`[ElectronUpdater:cancelUpdates] - Unable to cancel updates`);
     }
   };
 
@@ -150,23 +151,22 @@ class ElectronUpdater {
   /* ****************************************************************************/
 
   /**
-   * @function _downloadUpdate
+   * @function _downloadUpdates
    * @description Function to download the available update.
    */
-  _downloadUpdate = () => {
+  _downloadUpdates = () => {
     return new Promise((resolve, reject) => {
       this._cancellationToken = new CancellationToken();
 
       autoUpdater
         .downloadUpdate(this._cancellationToken)
         .then((data) => {
-          return resolve(data);
+          resolve(data);
         })
-        .catch((exception) => {
-          console.error(`[ElectronUpdater][downloadUpdate]: Caught an exception while downloading update ${exception.message}`);
+        .catch((err) => {
+          console.error(`[ElectronUpdater:downloadUpdate] - Error while downloading updates ${err}`);
           this.cancelUpdate();
-
-          return reject();
+          reject();
         });
     });
   };
@@ -175,10 +175,10 @@ class ElectronUpdater {
    * @function _updateNotFound
    * @description Event handler for update-not-available
    */
-  _updateNotFound = () =>{
+  _updateNotFound = () => {
     this._downloadInProgress = false;
 
-    console.log("[ElectronUpdater]: No update Available");
+    console.error("[ElectronUpdater] - No updates available");
   }
 
   /**
@@ -186,7 +186,7 @@ class ElectronUpdater {
   * @description Event handler for update-available
   */
   _updateAvailable = (info) => {
-    console.log(`[ElectronUpdater][update-available]: Update available show window ${info.version}`);
+    console.log(`[ElectronUpdater] - A new version ${info.version} is available`);
   }
 
   /**
@@ -196,7 +196,7 @@ class ElectronUpdater {
   _handleErrorOnUpdate = (event) => {
     this._downloadInProgress = false;
 
-    console.error(`[ElectronUpdater][error]: ${event}`);
+    console.error(`[ElectronUpdater] - Error while updating the application ${event}`);
   }
 
   /**
@@ -206,7 +206,7 @@ class ElectronUpdater {
   _handleDownloadInProgress = (progressInfo) => {
     this._downloadInProgress = true;
 
-    console.log(`[ElectronUpdater][download-progress]: Download Progress : ${progressInfo.percent}`);
+    console.log(`[ElectronUpdater] - Download Progress: ${progressInfo.percent}`);
   }
 
   /**
@@ -215,7 +215,7 @@ class ElectronUpdater {
    */
   _handleDownloadCompleted = () => {
     this._downloadInProgress = false;
-    console.log("[ElectronUpdater][update-downloaded]: Download compleated");
+    console.log("[ElectronUpdater] - Download compleated");
 
     if (this._allowAutoUpdate) {
       autoUpdater.quitAndInstall();

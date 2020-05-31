@@ -6,7 +6,7 @@
  */
 
 import fs from 'fs-extra';
-import { getUuid } from 'utils';
+import { uuid } from 'uuidv4';
 
 class Storage {
   constructor(config = {}) {
@@ -123,7 +123,7 @@ class Storage {
    * @description Writes the updated data to the storage file
    */
   _write = (rawData) => {
-    const tempPath = `${this._location}.${getUuid().replace(/-/g, '')}`;
+    const tempPath = `${this._location}.${uuid().replace(/-/g, '')}`;
     const data = JSON.stringify(rawData);
 
     return Promise.resolve()

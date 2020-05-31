@@ -1,5 +1,5 @@
 /**
- * @file constants.js
+ * @file electronUpdater/constants.js
  * @description electronUpdater constants
  * @author Abhishek MS <abhishek.ms@hashedin.com>
  * Created on: 26/05/2020

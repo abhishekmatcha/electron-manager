@@ -1,7 +1,8 @@
 /**
  * @file ElectronUpdater renderer
- * Created on: 22/05/2020
+ * @description electronUpdater main module
  * @author Abhishek MS <abhishek.ms@hashedin.com>
+ * Created on: 22/05/2020
  */
 
 import { ipcRenderer } from "electron";
@@ -17,10 +18,11 @@ class ElectronUpdater {
   /* ****************************************************************************/
   // Instance Methods
   /* ****************************************************************************/
-  
+
   /**
    * @function checkForUpdates
    * @description Function to check if any updates available, if available it returns a resolved promise else rejects.
+   * @returns {Promise} resolve if update is available, else reject.
    */
   checkForUpdates = () => {
     return ipcRenderer.invoke(CHECK_FOR_UPDATES);
@@ -29,6 +31,7 @@ class ElectronUpdater {
   /**
    * @function downloadUpdates
    * @description Function to download the available update.
+   * @returns {Promise} resolve if starts the download, else reject.
    */
   downloadUpdates = () => {
     return ipcRenderer.invoke(DOWNLOAD_UPDATE);
