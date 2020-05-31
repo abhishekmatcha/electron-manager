@@ -348,7 +348,7 @@ This method is an alternative for `new BrowserWindow({})`, the default way of cr
  
 ## License
  
-Licensed under MIT
+Licensed under [MIT](https://github.com/hashedin/electron-manager/blob/master/LICENSE)
  
 Copyright (c) 2010-2020 | © HashedIn Technologies Pvt. Ltd.
  
