@@ -1,41 +1,31 @@
 /**
  * @class Logger
- * @description Logger for main process
+ * @description Logger module for main process
  * @author Sanoop Jose T <sanoop.jose@hashedin.com>
  * Created on: 14/11/2019
  */
 
+import { ipcMain, app } from 'electron';
 import fs from 'fs-extra';
 import os, { EOL } from 'os';
 import path from 'path';
 import { uuid } from 'uuidv4';
-import { ipcMain, app } from 'electron';
-import { LOGGER_GET_UER_CONFIG, LOGGER_WRITE_TO_FILE, LOG_TYPES } from './constants';
-import { isInitialized, generateDateTimeFormat, getFormattedString } from './utils';
+import * as CONSTANTS from './constants';
+import * as utils from './utils';
 
 class Logger {
   constructor() {
     this._started = false;
+    this._cleanLogs = true;
+    this._logFolderPath = path.join(app.getPath('userData'), 'logs');
+    this._logPeriod = 7;
+    this._setFileHeader = true;
+    this._writeToFile = true;
+    this._file = null;
 
-    // Console proxies
-    this.consoleError = console.error;
-    this.consoleInfo = console.info;
-    this.consoleLog = console.log;
-    this.consoleWarn = console.warn;
-
-    // Event listeners for logger module
-    ipcMain.on(LOGGER_GET_UER_CONFIG, (evt) => {
-      const userConfig = {
-        writeToFile: this._writeToFile,
-        proxifyConsol: this._proxifyConsol
-      };
-
-      evt.returnValue = userConfig;
-    });
-
-    ipcMain.on(LOGGER_WRITE_TO_FILE, (evt, message) => {
-      this._writeLogsToFile(message);
-    });
+    // Internal IPC event listeners
+    ipcMain.on(CONSTANTS.GET_LOGGER_CONFIG, this._getLoggerConfig);
+    ipcMain.on(CONSTANTS.WRITE_LOGS_TO_FILE, (evt, message) => this._writeLogsToFile(message));
   }
 
   /* ****************************************************************************/
@@ -44,100 +34,113 @@ class Logger {
 
   /**
    * @function init
-   * @param { object } config: Logger configurations
-   * @description Initialize Logger
+   * @param {object} config - Logger configurations
+   * @description Initialize Logger main module
    */
   init = (config = {}) => {
     if (this._started) return;
 
-    const {
-      writeToFile = true,
-      logPeriod = 30,
-      proxifyConsol = false,
-      setFileHeader = true,
-      cleanLogs = true,
-      logFolderPath = path.join(app.getPath('userData'), 'logs')
-    } = config;
+    this._started = true;
+
+    // Return if wrong type
+    if (typeof config !== 'object' || Array.isArray(config)) {
+      return console.error(`[Logger:init] - Configurations should be an object type`)
+    }
 
     // Set configurations
-    this._writeToFile = writeToFile;
-    this._logPeriod = logPeriod;
-    this._proxifyConsol = proxifyConsol;
-    this._setFileHeader = setFileHeader;
-    this._cleanLogs;
-    this._logFolderPath = logFolderPath;
-    this._file = this._generateLogFilePath();
+    if ('cleanLogs' in config) {
+      if (typeof config.cleanLogs === 'boolean') {
+        this._cleanLogs = config.cleanLogs;
+      } else {
+        console.error(`[Logger:init] - The "cleanLogs" argument must be type boolean. Received type ${typeof config.cleanLogs}`)
+      }
+    }
 
-    // Proxify console methods if it is enabled in the configuration
-    if (this._proxifyConsol) this._proxyConsoleLogs();
+    if ('logFolderPath' in config) {
+      if (typeof config.logFolderPath === 'string') {
+        this._logFolderPath = config.logFolderPath;
+      } else {
+        console.error(`[Logger:init] - The "logFolderPath" argument must be type string. Received type ${typeof config.logFolderPath}`)
+      }
+    }
+
+    if ('logPeriod' in config) {
+      if (typeof config.logPeriod === 'number') {
+        if (/^\+?[1-9][\d]*$/.test(config.logPeriod)) {
+          this._logPeriod = config.logPeriod;
+        } else {
+          console.error('[Logger:init] - logPeriod should be a positive integer')
+        }
+      } else {
+        console.error(`[Logger:init] - The "logPeriod" argument must be type number. Received type ${typeof config.logPeriod}`)
+      }
+    }
+
+    if ('setFileHeader' in config) {
+      if (typeof config.setFileHeader === 'boolean') {
+        this._setFileHeader = config.setFileHeader;
+      } else {
+        console.error(`[Logger:init] - The "setFileHeader" argument must be type boolean. Received type ${typeof config.setFileHeader}`)
+      }
+    }
+
+    if ('writeToFile' in config) {
+      if (typeof config.writeToFile === 'boolean') {
+        this._writeToFile = config.writeToFile;
+      } else {
+        console.error(`[Logger:init] - The "writeToFile" argument must be type boolean. Received type ${typeof config.writeToFile}`)
+      }
+    }
+
+    // Generate a file for the current session
+    this._file = this._generateLogFilePath();
 
     // Set file header if it is enabled in the configuration
     if (this._setFileHeader) this._addHeaderInLogFile();
-
-    // Remove logs after expiry if it is enabled in the configuration
-    if (this._cleanLogs) this._cleanLogFiles();
-
-    this._started = true;
   }
 
   /**
    * @function error
-   * @param { array } args: Array of arguments
+   * @param {array} args - List of args to the error statement
    * @description Logs the error messages.
    */
   error = (...args) => {
-    if (isInitialized(this._started)) {
-      const message = getFormattedString(LOG_TYPES.ERROR, ...args);
+    const message = utils.getFormattedString(CONSTANTS.LOG_TYPES.ERROR, ...args);
 
-      this.consoleError(message);
-
-      if (this._writeToFile) this._writeLogsToFile(LOG_TYPES.ERROR, message);
-    }
+    this._handleConsoleStatement(message, CONSTANTS.LOG_TYPES.ERROR);
   }
 
   /**
    * @function info
-   * @param { array } args: Array of arguments
+   * @param {array} args - List of args to the error statement
    * @description Logs the info messages.
    */
   info = (...args) => {
-    if (isInitialized(this._started)) {
-      const message = getFormattedString(LOG_TYPES.INFO, ...args);
+    const message = utils.getFormattedString(CONSTANTS.LOG_TYPES.INFO, ...args);
 
-      this.consoleInfo(message);
-
-      if (this._writeToFile) this._writeLogsToFile(LOG_TYPES.INFO, message);
-    }
+    this._handleConsoleStatement(message, CONSTANTS.LOG_TYPES.INFO);
   }
 
   /**
    * @function log
-   * @param { array } args: Array of arguments
-   * @description Logs the log messages
+   * @param {array} args - List of args to the error statement
+   * @description Logs the log messages.
    */
   log = (...args) => {
-    if (isInitialized(this._started)) {
-      const message = getFormattedString(LOG_TYPES.LOG, ...args);
+    const message = utils.getFormattedString(CONSTANTS.LOG_TYPES.LOG, ...args);
 
-      this.consoleLog(message);
-
-      if (this._writeToFile) this._writeLogsToFile(LOG_TYPES.LOG, message);
-    }
+    this._handleConsoleStatement(message, CONSTANTS.LOG_TYPES.LOG);
   }
 
   /**
    * @function warn
-   * @param { array } args: Array of arguments
+   * @param {array} args - List of args to the error statement
    * @description Logs the warning messages
    */
   warn = (...args) => {
-    if (isInitialized(this._started)) {
-      const message = getFormattedString(LOG_TYPES.WARN, ...args);
+    const message = utils.getFormattedString(CONSTANTS.LOG_TYPES.WARN, ...args);
 
-      this.consoleWarn(message);
-
-      if (this._writeToFile) this._writeLogsToFile(LOG_TYPES.WARN, message);
-    }
+    this._handleConsoleStatement(message, CONSTANTS.LOG_TYPES.WARN);
   }
 
   /* ****************************************************************************/
@@ -145,39 +148,56 @@ class Logger {
   /* ****************************************************************************/
 
   /**
-   * @function _proxyConsoleLogs
-   * @description overwrites console logs
+   * @function _getLoggerConfig
+   * @param {object} event - IPC event object
+   * @description Return custom logger config as reply.
    */
-  _proxyConsoleLogs = () => {
-    console.error = (...args) => {
-      this.error(...args);
+  _getLoggerConfig = (evt) => {
+    const userConfig = {
+      writeToFile: this._writeToFile
     };
 
-    console.info = (...args) => {
-      this.info(...args);
-    };
+    evt.returnValue = userConfig;
+  }
 
-    console.log = (...args) => {
-      this.log(...args);
-    };
+  /**
+   * @function _handleConsoleStatement
+   * @param {string} message - Message to be consoled
+   * @param {string} type - Console Type
+   * @description Console loggger messages to local(terminal)
+   */
+  _handleConsoleStatement = (message, type) => {
+    console[type](message);
 
-    console.warn = (...args) => {
-      this.warn(...args);
-    };
+    if (this._writeToFile) this._writeLogsToFile(message);
   }
 
   /**
    * @function _writeLogsToFile
-   * @param { string } type: Log type
-   * @param { string } message: Stringified message
-   * @description Console to file
+   * @param {string} message: Stringified message
+   * @description Write console statements to file
    */
-  _writeLogsToFile = (type, message) => {
+  _writeLogsToFile = (message) => {
+    // Clean logs if the module is not initialized before
+    if (!this._started) {
+      this._started = true;
+
+      // Clean old log files
+      this._cleanLogFiles();
+    }
+
+    if (!this._file) {
+      this._file = this._generateLogFilePath();
+
+      // Set file header if it is enabled in the configuration
+      if (this._setFileHeader) this._addHeaderInLogFile();
+    }
+
     if (this._file) {
       fs.writeFile(this._file, message, { flag: 'a' })
         .catch(err => console.error(err));
     } else {
-      console.error('[Logger][_writeLogsToFile]: Log file is not been created!')
+      console.error('[Logger] - Log file is not been created!')
     }
   }
 
@@ -190,7 +210,7 @@ class Logger {
       fs.mkdirSync(this._logFolderPath);
     }
 
-    return path.join(this._logFolderPath, `${generateDateTimeFormat()}_${uuid()}.log`);
+    return path.join(this._logFolderPath, `${utils.generateDateTimeFormat()}_${uuid()}.log`);
   }
 
   /**
@@ -198,12 +218,6 @@ class Logger {
    * @description Remove all expired logs from the folder.
    */
   _cleanLogFiles = () => {
-    if (typeof this._logPeriod !== "number") {
-      console.error('[Logger][cleanLogs]: Invalid logPeriod.');
-
-      return;
-    }
-
     const date = new Date();
     const logExpiryDate = date.setDate(date.getDate() - this._logPeriod);
 
@@ -215,10 +229,10 @@ class Logger {
           const diffTime = Math.abs(date - stats.birthtime)
           const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-          if (diffDays > 30) {
+          if (diffDays > this._logPeriod) {
             fs.unlink(filePath, (err) => {
               if (err) {
-                console.error(`[Logger][cleanLogs]: Failed to remove log file ${filePath}: ${err}`);
+                console.error(`[Logger] - Failed to remove log file ${filePath}: ${err}`);
               }
             });
           }
@@ -246,7 +260,7 @@ class Logger {
 
     fileHeaderStr = `${fileHeaderStr}${EOL}-----------------------------------------------------------------${EOL}${EOL}`
 
-    this._writeLogsToFile(undefined, fileHeaderStr);
+    this._writeLogsToFile(fileHeaderStr);
   }
 }
 

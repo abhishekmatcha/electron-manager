@@ -13,6 +13,11 @@ class ExampleApp {
     this.mainWindow = null;
     this.settingsWindow = null;
 
+    // Initialize modules
+    electronManager.init({ isDev: true });
+    windowManager.init({ windowUrlPath: app.getAppPath() });
+    logger.init();
+
     app.on('ready', this.handleAppReady);
 
     app.on('window-all-closed', () => {
@@ -22,9 +27,6 @@ class ExampleApp {
     app.on('activate', () => {
       if (this.mainWindow === null) { this.createMainWindow(); }
     });
-
-    electronManager.init({ isDev: true });
-    windowManager.init({ windowUrlPath: app.getAppPath() });
 
     // Event listeners
     ipcMain.on('OPEN_SETTINGS', this.openSettingsWindow);
@@ -65,7 +67,10 @@ class ExampleApp {
     // Emitted when the window is closed.
     this.mainWindow.on('closed', () => { this.mainWindow = null; });
 
-    logger.log('This is a test message from Logger');
+    logger.error('This is a test error message from main process');
+    logger.info('This is a test info message from main process');
+    logger.log('This is a test log message from main process');
+    logger.warn('This is a test warn message from main process');
   }
 
   /**

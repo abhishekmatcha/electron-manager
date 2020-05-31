@@ -1,6 +1,6 @@
 /**
- * @file electronUpdater.main.js
- * @description electronUpdater main module
+ * @class ElectronUpdater
+ * @description electronUpdater module for main process
  * @author Abhishek MS <abhishek.ms@hashedin.com>
  * Created on: 22/05/2020
  */

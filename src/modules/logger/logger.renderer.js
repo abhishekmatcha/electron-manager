@@ -1,26 +1,21 @@
 /**
  * @class Logger
- * @description Logger for renderer process
+ * @description Logger module for renderer process
  * @author Sanoop Jose T <sanoop.jose@hashedin.com>
  * Created on: 14/11/2019
  */
 
 import { ipcRenderer } from 'electron';
-import merge from 'lodash.merge';
-import { LOGGER_GET_UER_CONFIG, LOGGER_WRITE_TO_FILE, LOG_TYPES } from './constants';
-import { isInitialized, getFormattedString } from './utils';
+import * as CONSTANTS from './constants';
+import { getFormattedString } from './utils';
 
 class Logger {
   constructor() {
-    this._started = false;
-    this._writeToFile = false;
-    this._proxifyConsol = false;
+    // Get logger config from main
+    const mainConfig = ipcRenderer.sendSync(CONSTANTS.GET_LOGGER_CONFIG);
 
-    // Console proxies
-    this.consoleError = console.error;
-    this.consoleInfo = console.info;
-    this.consoleLog = console.log;
-    this.consoleWarn = console.warn;
+    this._started = false;
+    this._writeToFile = mainConfig.writeToFile || false;
   }
 
   /* ****************************************************************************/
@@ -35,76 +30,65 @@ class Logger {
   init = (config = {}) => {
     if (this._started) return;
 
-    // Get main user config
-    const mainConfig = ipcRenderer.sendSync(LOGGER_GET_UER_CONFIG);
+    this._started = true;
+
+    // Return if wrong type
+    if (typeof config !== 'object' || Array.isArray(config)) {
+      return console.error(`[Logger:init] - Configurations should be an object type`)
+    }
 
     // Set configurations
-    const finalConfig = merge(mainConfig, config);
-
-    // Set logger properties for renderer process
-    this._writeToFile = finalConfig.writeToFile;
-    this._proxifyConsol = finalConfig.proxifyConsol;
-
-    // Proxify console methods if it is enabled in the configuration
-    this._proxifyConsol && this._proxyConsoleLogs();
-
-    this._started = true;
+    if (config.writeToFile) {
+      if (typeof config.writeToFile === 'boolean') {
+        this._writeToFile = config.writeToFile;
+      } else {
+        console.error(`[Logger:init] - The "writeToFile" argument must be type boolean. Received type ${typeof config.writeToFile}`)
+      }
+    }
   }
 
   /**
    * @function error
-   * @param { array } args: Array of arguments
+   * @param {array} args - List of args to the error statement
    * @description Logs the error messages.
    */
   error = (...args) => {
-    if (isInitialized(this._started)) {
-      const message = getFormattedString(LOG_TYPES.ERROR, ...args);
+    const message = getFormattedString(CONSTANTS.LOG_TYPES.ERROR, ...args);
 
-      this.consoleError(message);
-      this._writeToFile && ipcRenderer.send(LOGGER_WRITE_TO_FILE, LOG_TYPES.ERROR, message);
-    }
+    this._handleConsoleStatement(message, CONSTANTS.LOG_TYPES.ERROR);
   }
 
   /**
    * @function info
-   * @param { array } args: Array of arguments
+   * @param {array} args - List of args to the error statement
    * @description Logs the info messages.
    */
   info = (...args) => {
-    if (isInitialized(this._started)) {
-      const message = getFormattedString(LOG_TYPES.INFO, ...args);
+    const message = getFormattedString(CONSTANTS.LOG_TYPES.INFO, ...args);
 
-      this.consoleInfo(message);
-      this._writeToFile && ipcRenderer.send(LOGGER_WRITE_TO_FILE, LOG_TYPES.INFO, message);
-    }
+    this._handleConsoleStatement(message, CONSTANTS.LOG_TYPES.INFO);
   }
 
   /**
    * @function log
-   * @param { array } args: Array of arguments
+   * @param {array} args - List of args to the error statement
    * @description Logs the log messages
    */
   log = (...args) => {
-    if (isInitialized(this._started)) {
-      const message = getFormattedString(LOG_TYPES.LOG, ...args);
+    const message = getFormattedString(CONSTANTS.LOG_TYPES.LOG, ...args);
 
-      this.consoleLog(message);
-      this._writeToFile && ipcRenderer.send(LOGGER_WRITE_TO_FILE, LOG_TYPES.LOG, message);
-    }
+    this._handleConsoleStatement(message, CONSTANTS.LOG_TYPES.LOG);
   }
 
   /**
    * @function warn
-   * @param { array } args: Array of arguments
+   * @param {array} args - List of args to the error statement
    * @description Logs the warning messages
    */
   warn = (...args) => {
-    if (isInitialized(this._started)) {
-      const message = getFormattedString(LOG_TYPES.WARN, ...args);
+    const message = getFormattedString(CONSTANTS.LOG_TYPES.WARN, ...args);
 
-      this.consoleWarn(message);
-      this._writeToFile && ipcRenderer.send(LOGGER_WRITE_TO_FILE, LOG_TYPES.WARN, message);
-    }
+    this._handleConsoleStatement(message, CONSTANTS.LOG_TYPES.WARN);
   }
 
   /* ****************************************************************************/
@@ -112,37 +96,15 @@ class Logger {
   /* ****************************************************************************/
 
   /**
-   * @function _proxyConsoleLogs
-   * @description overwrites console logs
+   * @function _handleConsoleStatement
+   * @param {string} message - Message to be consoled
+   * @param {string} type - Console Type
+   * @description Console loggger messages to local(terminal)
    */
-  _proxyConsoleLogs = () => {
-    console.error = (...args) => {
-      this.error(...args);
-    };
+  _handleConsoleStatement = (message, type) => {
+    console[type](message);
 
-    console.info = (...args) => {
-      this.info(...args);
-    };
-
-    console.log = (...args) => {
-      this.log(...args);
-    };
-
-    console.warn = (...args) => {
-      this.warn(...args);
-    };
-  }
-
-  /**
-   * @function _logToFile
-   * @param { string } type: Log type
-   * @param { array } args: Arguments
-   * @description Console to file
-   */
-  _logToFile = (type, ...args) => {
-    if (!this._writeToFile) return;
-
-    ipcRenderer.send(LOGGER_WRITE_TO_FILE, type, ...args);
+    if (this._writeToFile) ipcRenderer.send(CONSTANTS.WRITE_LOGS_TO_FILE, message);
   }
 }
 

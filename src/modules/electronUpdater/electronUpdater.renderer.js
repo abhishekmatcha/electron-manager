@@ -1,6 +1,6 @@
 /**
- * @file ElectronUpdater renderer
- * @description electronUpdater main module
+ * @class ElectronUpdater
+ * @description ElectronUpdater module for renderer process
  * @author Abhishek MS <abhishek.ms@hashedin.com>
  * Created on: 22/05/2020
  */

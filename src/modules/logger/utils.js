@@ -1,5 +1,5 @@
 /**
- * @file utils.js
+ * @file logger/utils.js
  * @description logger utils
  * @author Sanoop Jose T <sanoop.jose@hashedin.com>
  * Created on: 12/05/2020
@@ -9,8 +9,8 @@ import { EOL } from 'os';
 
 /**
  * @function _getFormattedString
- * @param { string } type: Log type
- * @param { array } args: Arguments
+ * @param {string} type - Log type
+ * @param {array} args - Arguments
  * @description Return formatted log string.
  */
 export function getFormattedString(type, ...args) {
@@ -34,8 +34,8 @@ export function getFormattedString(type, ...args) {
 
 /**
  * @function formatLogString
- * @param { string } type: Log type
- * @param { string } message: Log message
+ * @param {string} type - Log type
+ * @param {string} message - Log message
  * @description Formats the messages with date-time and type
  */
 export function formatLogString(type, message) {
@@ -48,7 +48,7 @@ export function formatLogString(type, message) {
 /**
  * @function generateDateTimeFormat
  * @description Generate a date-time string for file name.
- * @returns { string }: date-time string 
+ * @returns {string} - date-time string 
  */
 export function generateDateTimeFormat() {
   const date = new Date();
@@ -61,14 +61,3 @@ export function generateDateTimeFormat() {
   return `${dateString}_${timeString}`;
 }
 
-/**
- * @function isInitialized
- * @param { boolean } isStarted: Started flag
- * @param { boolean } warn: warn message flag
- * @description Return true if started, else false.
- */
-export function isInitialized(isStarted = false, warn = true) {
-  if (!isStarted && warn) console.error('The logger module is not been initialized. Initialize the module before using it!')
-
-  return isStarted === true;
-}
