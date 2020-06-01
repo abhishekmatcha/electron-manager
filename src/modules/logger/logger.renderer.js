@@ -11,6 +11,14 @@ import { getFormattedString } from './utils';
 
 class Logger {
   constructor() {
+    // Override local consols
+    this._console = {
+      error: console.error,
+      info: console.info,
+      log: console.log,
+      warn: console.warn,
+    }
+
     // Get logger config from main
     const mainConfig = ipcRenderer.sendSync(CONSTANTS.GET_LOGGER_CONFIG);
 
@@ -43,6 +51,17 @@ class Logger {
         this._writeToFile = config.writeToFile;
       } else {
         console.error(`[Logger:init] - The "writeToFile" argument must be type boolean. Received type ${typeof config.writeToFile}`)
+      }
+    }
+
+    if ('handleLocalConsole' in config) {
+      if (typeof config.handleLocalConsole === 'boolean') {
+        console.error = (...args) => this.error(...args);
+        console.info = (...args) => this.info(...args);
+        console.log = (...args) => this.log(...args);
+        console.warn = (...args) => this.warn(...args);
+      } else {
+        console.error(`[Logger:init] - The "handleLocalConsole" argument must be type boolean. Received type ${typeof config.handleLocalConsole}`)
       }
     }
   }
@@ -102,7 +121,7 @@ class Logger {
    * @description Console loggger messages to local(terminal)
    */
   _handleConsoleStatement = (message, type) => {
-    console[type](message);
+    this._console[type](message);
 
     if (this._writeToFile) ipcRenderer.send(CONSTANTS.WRITE_LOGS_TO_FILE, message);
   }

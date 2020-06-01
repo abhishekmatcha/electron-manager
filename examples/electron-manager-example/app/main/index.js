@@ -16,7 +16,7 @@ class ExampleApp {
     // Initialize modules
     electronManager.init({ isDev: true });
     windowManager.init({ windowUrlPath: app.getAppPath() });
-    logger.init();
+    logger.init({ handleLocalConsole: true });
 
     app.on('ready', this.handleAppReady);
 
@@ -71,6 +71,7 @@ class ExampleApp {
     logger.info('This is a test info message from main process');
     logger.log('This is a test log message from main process');
     logger.warn('This is a test warn message from main process');
+    console.error('This is a test error(local) message from main process');
   }
 
   /**

@@ -138,13 +138,14 @@ Logger module helps to log all kinds of entries to both console and file. It can
  
 The logger module has to be initialized in respective processes with a relevant set of configuration options. Since there can be multiple renderer processes in an electron application, the logger module also can be set up for all the processes based on user preferences.
  
-|     Params    | Type    | Default Value   | Description                                                     |
-|---------------|---------|-----------------|-----------------------------------------------------------------|
-| cleanLogs     | boolean | true            | Clean log files periodically                                    |
-| logFolderPath | string  | `userData/logs` | Application logs folder path                                    |
-| logPeriod     | number  | 7               | Logfile's lifespan in days                                      |
-| setFileHeader | boolean | true            | Add file header in each log file                                |
-| writeToFile   | boolean | true            | Write log entries into a system file                            |
+|     Params         | Type    | Default Value   | Description                                 |
+|--------------------|---------|-----------------|---------------------------------------------|
+| cleanLogs          | boolean | true            | Clean log files periodically                |
+| handleLocalConsole | boolean | false           | Override local console statements in logger |
+| logFolderPath      | string  | `userData/logs` | Application logs folder path                |
+| logPeriod          | number  | 7               | Logfile's lifespan in days                  |
+| setFileHeader      | boolean | true            | Add file header in each log file            |
+| writeToFile        | boolean | true            | Write log entries into a system file        |
  
 > **Note:** *`userData` The directory for storing your app's configuration files, which by default it is the appData directory appended with your app's name.*
  

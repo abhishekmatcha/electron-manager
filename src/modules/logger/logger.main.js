@@ -5,7 +5,7 @@
  * Created on: 14/11/2019
  */
 
-import { ipcMain, app } from 'electron';
+import { app, ipcMain } from 'electron';
 import fs from 'fs-extra';
 import os, { EOL } from 'os';
 import path from 'path';
@@ -22,6 +22,14 @@ class Logger {
     this._setFileHeader = true;
     this._writeToFile = true;
     this._file = null;
+
+    // Override local consols
+    this._console = {
+      error: console.error,
+      info: console.info,
+      log: console.log,
+      warn: console.warn,
+    }
 
     // Internal IPC event listeners
     ipcMain.on(CONSTANTS.GET_LOGGER_CONFIG, this._getLoggerConfig);
@@ -89,6 +97,17 @@ class Logger {
         this._writeToFile = config.writeToFile;
       } else {
         console.error(`[Logger:init] - The "writeToFile" argument must be type boolean. Received type ${typeof config.writeToFile}`)
+      }
+    }
+
+    if ('handleLocalConsole' in config) {
+      if (typeof config.handleLocalConsole === 'boolean') {
+        console.error = (...args) => this.error(...args);
+        console.info = (...args) => this.info(...args);
+        console.log = (...args) => this.log(...args);
+        console.warn = (...args) => this.warn(...args);
+      } else {
+        console.error(`[Logger:init] - The "handleLocalConsole" argument must be type boolean. Received type ${typeof config.handleLocalConsole}`)
       }
     }
 
@@ -167,7 +186,7 @@ class Logger {
    * @description Console loggger messages to local(terminal)
    */
   _handleConsoleStatement = (message, type) => {
-    console[type](message);
+    this._console[type](message);
 
     if (this._writeToFile) this._writeLogsToFile(message);
   }
@@ -247,6 +266,8 @@ class Logger {
    */
   _addHeaderInLogFile = () => {
     const defaultHeader = {
+      AppName: app.getName(),
+      AppVersion: app.getVersion(),
       OSName: os.platform(),
       OSRelease: os.release(),
       CPUArchitecture: os.arch()

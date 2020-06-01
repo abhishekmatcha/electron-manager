@@ -1,5 +1,5 @@
 /**
- * @file paths.js
+ * @file webpack.config.prod.js
  * @description Electron Manager webpack configuration
  * Created on: 22/05/2020
  * @author Sanoop Jose <sanoop.jose@hashedin.com>
