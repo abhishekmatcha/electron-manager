@@ -91,23 +91,20 @@ class ElectronUpdater {
    * @description Function to download the available update.
    */
   downloadUpdates = () => {
-    return new Promise((resolve, reject) => {
-      // Electron Updater will only work on production mode 
-      if (isDev()) return reject();
+    if (isDev()) return Promise.reject();
 
-      if (this._cancellationToken) {
-        return this._downloadUpdates();
-      } else {
-        this.checkForUpdates()
-          .then(() => {
-            return this._downloadUpdates();
-          })
-          .catch((err) => {
-            return reject(err);
-          });
-      }
-    });
-  };
+    if (this._cancellationToken) {
+      return this._downloadUpdates();
+    } else {
+      this.checkForUpdates()
+        .then(() => {
+          return this._downloadUpdates();
+        })
+        .catch((err) => {
+          return Promise.reject(err);
+        });
+    }
+  }
 
   /**
    * @function installUpdates
