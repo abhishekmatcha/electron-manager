@@ -62,7 +62,7 @@ class ElectronUpdater {
 
   /**
    * @function checkForUpdates
-   * @description Function to check if any updates available, if available it returns a resolved promise else rejects.
+   * @description Function to check if any updates available, if available it returns a resolved promise with the available latest version else rejects.
    */
   checkForUpdates = () => {
     return new Promise((resolve, reject) => {
@@ -77,7 +77,7 @@ class ElectronUpdater {
         .checkForUpdates()
         .then((res) => {
           this._cancellationToken = res.cancellationToken;
-          resolve();
+          resolve(res.versionInfo.version);
         })
         .catch((err) => {
           console.error(`[ElectronUpdater:checkForUpdates] - Error while checking for update: ${err}`);
