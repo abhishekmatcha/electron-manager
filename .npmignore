@@ -1,0 +1,49 @@
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Coverage tools
+lib-cov
+coverage
+coverage.html
+.cover*
+
+# Dependency directory
+node_modules
+
+# OSX
+*.DS_Store
+
+# VS Code
+.vscode/*
+!.vscode/launch.json
+
+# XCode
+xcuserdata/
+xcshareddata/
+
+# Example build directory
+.publish
+
+# Editor and other tmp files
+*.swp
+*.un~
+*.iml
+*.ipr
+*.iws
+*.sublime-*
+.idea/
+*.tgz
+.env
+npm-debug.log.*
+.eslintcache
+
+configs/
+examples/
+src/
+test/
