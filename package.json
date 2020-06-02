@@ -1,7 +1,7 @@
 {
-  "name": "electron-manager",
+  "name": "@hashedin/electron-manager",
   "version": "1.0.0",
-  "description": "Electron app manager modules",
+  "description": "Electron utility modules for desktop applications",
   "author": "HashedIn Technologies",
   "license": "MIT",
   "main": "lib/index.js",
@@ -14,6 +14,14 @@
     "test": "npm run test:main && npm run test:renderer",
     "test:main": "electron-mocha test/main --timeout 10000 --colors --inspect --recursive --sort",
     "test:renderer": "electron-mocha --renderer test/renderer --timeout 10000 --colors --inspect --recursive --sort"
+  },
+  "homepage": "https://github.com/hashedin/electron-manager",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hashedin/electron-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hashedin/electron-manager/issues"
   },
   "devDependencies": {
     "@babel/core": "7.6.4",
@@ -35,5 +43,14 @@
     "lodash.merge": "4.6.2",
     "uuidv4": "6.1.0",
     "valid-filename": "3.1.0"
-  }
+  },
+  "peerDependencies": {
+    "electron": "9.0.0",
+    "electron-updater": "4.3.1"
+  },
+  "keywords": [
+    "electron",
+    "utility",
+    "manager"
+  ]
 }
