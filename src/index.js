@@ -5,6 +5,8 @@
  * Created on: 22/05/2020
  */
 
+"use strict";
+
 let runtimeProcess = (process && process.type === 'browser') ? 'main' : 'renderer';
 
 module.exports = {
