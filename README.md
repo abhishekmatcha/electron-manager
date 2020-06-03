@@ -6,15 +6,14 @@
  
 Using npm:
 ```bash
-$ npm i --save electron-manager
+$ npm i @hashedin/electron-manager
 ```
  
 Then use it in your app:
  
 ```js
-import electronManager from 'electron-manager';
+import electronManager, { logger } from '@hashedin/electron-manager';
  
-const { logger } =  electronManager;
 electronManager.init();
  
 ...
@@ -75,9 +74,8 @@ ElectronUpdater module is used to update the application from existing version t
 The ElectronUpdater module has to be initialized in the main processes.
  
 ```js
-import electronManager from 'electron-manager';
- 
-const { electronUpdater } = electronManager;
+import { electronUpdater } from '@hashedin/electron-manager';
+
 ...
 electronUpdater.init();
 ```
@@ -150,7 +148,7 @@ The logger module has to be initialized in respective processes with a relevant 
 > **Note:** *`userData` The directory for storing your app's configuration files, which by default it is the appData directory appended with your app's name.*
  
 ```js
-import electronManager from 'electron-manager';
+import { logger } from '@hashedin/electron-manager';
  
 const { logger } = electronManager;
  
@@ -235,7 +233,7 @@ The configuration can be of type array or object. If you have multiple storages 
  
 ```js
 // Main process
-import { storageManager } from 'electron-manager';
+import { storageManager } from '@hashedin/electron-manager';
 ...
 storageManager.init();
  
@@ -262,7 +260,7 @@ Read data from the file storage.
 | storageName(*) | string | undefined     | Storage name       |
  
 ```js
-import { storageManager } from 'electron-manager';
+import { storageManager } from '@hashedin/electron-manager';
  
 ...
 storageManager.read('settings')
@@ -283,7 +281,7 @@ Write data to the file storage.
 | storageName(*) | string | undefined     | Storage name       |
  
 ```js
-import { storageManager } from 'electron-manager';
+import { storageManager } from '@hashedin/electron-manager';
  
 ...
 storageManager.write('settings', {systemSettings: false})
@@ -345,6 +343,20 @@ This method is an alternative for `new BrowserWindow({})`, the default way of cr
  
  
 > **Note:** *Either `name` or `url` is mandatory to load the webContent in the newly created window. If the new window is using a hosted URL to load the content then pass the URL in `url` param. If it is a static file then, make sure that the window name is matching with the HTML file specified in the `windowUrlPath`.*
+
+```js
+import { windowManager } from '@hashedin/electron-manager';
+ 
+...
+const win = windowManager.createWindow({
+  devTools: true,
+  url: 'https://www.example.com',
+  options: {
+    height: 400
+    width: 600,
+  }
+});
+```
  
 * **getWindowByName (main + renderer)**
 
