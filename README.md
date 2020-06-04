@@ -374,6 +374,24 @@ Returns the `BroserWindow` id.
 |---------------|--------|---------------|--------------------|
 | windowName(*) | string | undefined     | Name of the window |
 
+* **getAllWindowIds (main + renderer)**
+
+Returns an array of all opened window ids.
+
+* **getAllWindowNames (main + renderer)**
+
+Returns an array of all opened window names.
+
+```js
+import { windowManager } from '@hashedin/electron-manager';
+ 
+...
+const windowNames = windowManager.getAllWindowNames();
+
+console.log('Window Names:', windowNames);
+```
+
+
 ## License
  
 Licensed under [MIT](https://github.com/hashedin/electron-manager/blob/master/LICENSE)

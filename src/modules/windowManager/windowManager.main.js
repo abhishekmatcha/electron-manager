@@ -24,6 +24,7 @@ class WindowManager {
     // Internal IPC event listeners
     ipcMain.on(CONSTANTS.WM_CREATE_WINDOW, this._createWindow);
     ipcMain.on(CONSTANTS.WM_GET_WINDOWID_BY_NAME, (event, windowName) => { event.returnValue = this.getWindowIdByName(windowName) });
+    ipcMain.on(CONSTANTS.WM_GET_ALL_WINDOW_NAMES, (event) => { event.returnValue = this.getAllWindowNames() });
   }
 
   /* ****************************************************************************/
@@ -125,6 +126,28 @@ class WindowManager {
     const window = this.getWindowByName(windowName);
 
     return window ? window.id : null;
+  }
+
+  /**
+   * @function getAllWindowIds
+   * @description Return all opened window ids
+   * @returns {Array} BrowserWindow ids.
+   */
+  getAllWindowIds = () => {
+    const windows = BrowserWindow.getAllWindows() || [];
+
+    return windows.map(w => w.id);
+  }
+
+  /**
+   * @function getAllWindowNames
+   * @description Return All opened window names
+   * @returns {Array} BrowserWindow names.
+   */
+  getAllWindowNames = () => {
+    const windows = Array.from(this._windows.values());
+
+    return windows.map(w => w.name)
   }
 
   /* ****************************************************************************/

@@ -49,6 +49,27 @@ class WindowManager {
   getWindowIdByName = (windowName) => {
     return ipcRenderer.sendSync(CONSTANTS.WM_GET_WINDOWID_BY_NAME, windowName);
   }
+
+  /**
+   * @function getAllWindowIds
+   * @description Return all opened window ids
+   * @returns {Array} BrowserWindow ids. 
+   */
+  getAllWindowIds = () => {
+    const windows = BrowserWindow.getAllWindows() || [];
+
+    return windows.map(w => w.id);
+  }
+
+  /**
+   * @function getAllWindowNames
+   * @description Return All opened window names
+   * @returns {Array} BrowserWindow names.
+   */
+  getAllWindowNames = () => {
+    return ipcRenderer.sendSync(CONSTANTS.WM_GET_ALL_WINDOW_NAMES);
+  }
+
 }
 
 export default new WindowManager();
