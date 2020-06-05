@@ -37,7 +37,7 @@ class WindowManager {
 
     const windowId = ipcRenderer.sendSync(CONSTANTS.WM_GET_WINDOWID_BY_NAME, windowName);
 
-    return BrowserWindow.fromId(windowId);
+    return windowId ? BrowserWindow.fromId(windowId): null;
   }
 
   /**
