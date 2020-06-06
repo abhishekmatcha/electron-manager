@@ -6,9 +6,10 @@
  */
 
 import { ipcMain } from 'electron';
-import { autoUpdater, CancellationToken } from 'electron-updater';
 import { isDev } from '../../utils';
 import * as CONSTANTS from './constants';
+
+let autoUpdater, CancellationToken;
 
 class ElectronUpdater {
   constructor() {
@@ -16,6 +17,12 @@ class ElectronUpdater {
     this._allowAutoUpdate = false;
     this._downloadInProgress = false;
     this._cancellationToken;
+
+    try {
+      autoUpdater = require('electron-updater').autoUpdater;
+    } catch (ex) { /* no-op */ }
+
+    if (!autoUpdater) return this;
 
     // Internal IPC event listeners
     ipcMain.on(CONSTANTS.AUTO_UPDATE, this.autoUpdate);
@@ -49,6 +56,12 @@ class ElectronUpdater {
     if (this._started) return;
 
     this._started = true;
+
+    try {
+      require('electron-updater');
+    } catch (ex) {
+      console.log('[ElectronUpdater] - "electron-updater" is a peerDependency in ElectronManager. Please install it in your project.')
+    }
   };
 
   /**
@@ -67,7 +80,7 @@ class ElectronUpdater {
   checkForUpdates = () => {
     return new Promise((resolve, reject) => {
       // Electron Updater will only work on production mode 
-      if (isDev()) return reject();
+      if (isDev() || !autoUpdater) return reject();
 
       // Set auto download feature in autoUpdater
       autoUpdater.autoDownload = this._allowAutoUpdate;
@@ -112,7 +125,7 @@ class ElectronUpdater {
    */
   installUpdates = () => {
     // Electron Updater will only work on production mode 
-    if (isDev()) return;
+    if (isDev() || !autoUpdater) return;
 
     if (!this._downloadInProgress) {
       autoUpdater.quitAndInstall();
@@ -147,6 +160,14 @@ class ElectronUpdater {
    */
   _downloadUpdates = () => {
     return new Promise((resolve, reject) => {
+      if (isDev() || !autoUpdater) return reject();
+
+      try {
+        CancellationToken = require('electron-updater').CancellationToken;
+      } catch (ex) { /* no-op */ }
+
+      if (!CancellationToken) return reject();
+
       this._cancellationToken = new CancellationToken();
 
       autoUpdater
@@ -205,6 +226,8 @@ class ElectronUpdater {
    * @description Event handler for download-completed
    */
   _handleDownloadCompleted = () => {
+    if (isDev() || !autoUpdater) return;
+
     this._downloadInProgress = false;
     console.log("[ElectronUpdater] - Download compleated");
 

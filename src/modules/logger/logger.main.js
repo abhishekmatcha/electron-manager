@@ -240,7 +240,7 @@ class Logger {
     const date = new Date();
     const logExpiryDate = date.setDate(date.getDate() - this._logPeriod);
 
-    fs.readdir(this._logFolderPath, (err, files) => {
+    fs.readdir(this._logFolderPath, (err, files = []) => {
       files.forEach(file => {
         const filePath = path.join(this._logFolderPath, file);
 

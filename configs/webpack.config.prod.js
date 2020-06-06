@@ -10,6 +10,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const paths = require('./paths.js');
 
 const electronMainConfig = {
@@ -18,10 +19,14 @@ const electronMainConfig = {
   output: {
     filename: 'index.main.js',
   },
+  externals: {
+    'electron-updater': 'electron-updater',
+  },
   plugins: [
     new CopyWebpackPlugin([
       { from: 'src/index.js', to: 'index.js' }
-    ])
+    ]),
+    // new BundleAnalyzerPlugin()
   ]
 }
 
@@ -30,7 +35,10 @@ const electronRendererConfig = {
   entry: './src/index.renderer.js',
   output: {
     filename: 'index.renderer.js',
-  }
+  },
+  plugins: [
+    // new BundleAnalyzerPlugin()
+  ]
 }
 
 const baseConfig = {

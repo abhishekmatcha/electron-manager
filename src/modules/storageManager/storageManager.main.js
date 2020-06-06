@@ -93,7 +93,7 @@ class StorageManager {
       if (storagePromises.length) {
         // Resolve the promise once all the storages are initialized successfully
         Promise.allSettled(storagePromises)
-          .then((results) => {
+          .then((results = []) => {
             const fulfilled = [];
             const rejected = [];
 

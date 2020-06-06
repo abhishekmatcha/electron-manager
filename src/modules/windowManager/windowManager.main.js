@@ -6,7 +6,6 @@
  */
 
 import { app, BrowserWindow, ipcMain } from 'electron';
-import merge from 'lodash.merge';
 import path from 'path';
 import URL from 'url';
 import { isDev } from '../../utils';
@@ -61,7 +60,15 @@ class WindowManager {
   createWindow = (config = {}) => {
     const { name, options = {}, url, devTools = true } = config;
     const defaultConfig = { webPreferences: { devTools: (isDev() || this._enableDevTools) } }
-    const updatedWindowOptions = merge(defaultConfig, options);
+    const updatedWindowOptions = {
+      ...defaultConfig,
+      ...options,
+      webPreferences: {
+        ...defaultConfig.webPreferences,
+        ...options.webPreferences
+      }
+    };
+
     const windowInstance = new BrowserWindow(updatedWindowOptions);
     const windowId = windowInstance.id;
 
