@@ -1,6 +1,6 @@
 {
   "name": "@hashedin/electron-manager",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Electron utility modules for desktop applications",
   "author": "HashedIn Technologies",
   "license": "MIT",

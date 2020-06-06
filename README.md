@@ -41,6 +41,7 @@ logger.log('This is a test message...!!!');
 ## Modules
  
 * **ElectronUpdater**
+* **Ipc**
 * **Logger**
 * **StorageManager**
 * **WindowManager**
@@ -123,7 +124,72 @@ electronUpdater.installUpdates();
 ```js
 electronUpdater.cancelUpdate();
 ```
- 
+
+### Ipc
+
+Ipc provides communication channels within the Electron application. It is a wrapper over the Electron's communication modules `ipcMain` and `ipcRenderer`.
+
+Currently we support:
+  * *Renderer to Renderer communication*
+
+Future release we support:
+  * *Main to renderer communication*
+  * *Renderer to main communication*
+
+#### Methods
+
+* **init (main)**
+
+Initialize the ipc module in the main process before using its methods. This helps to initialize all the internal communication channels.
+
+* **request (renderer)**
+
+Like `ipcRenderer.invoke` but the handler funtion will be on a different renderer process instead of main process.
+
+| Params       | Type          | Default Value | Description                      |
+|--------------|---------------|---------------|----------------------------------|
+| channel(*)   | string        | undefined     | Channel name                     |
+| ...args      | any           | undefined     | list of arguments                |
+
+* **respond (renderer)**
+
+Like `ipcMain.handle` but the handler will be on a renderer process to handle an invokable IPC from an another renderer process.
+
+| Params      | Type     | Default Value | Description       |
+|-------------|----------|---------------|-------------------|
+| channel(*)  | string   | undefined     | Channel name      |
+| listener(*) | function | undefined     | Listener function |
+
+```js
+// Renderer process 1
+import { ipc } from '@hashedin/electron-manager';
+
+...
+ipc.request('CHANNEL_1', 'This a test input')
+  .then((result) => {
+    console.log(result);
+  })
+  .catch((err) => {
+    console.log(err);
+  })
+```
+
+```js
+// Renderer process 2
+import { ipc } from '@hashedin/electron-manager';
+
+...
+ipc.respond('CHANNEL_1', (evt, data) => {
+  console.log(data);
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve('This a test output')
+    }, 5000);
+  })
+})
+```
+
 ### Logger
  
 Logger module helps to log all kinds of entries to both console and file. It can be used in both the main process as well as the renderer process. The logger is a lightweight module in `electron-manager` which helps to debug the application in development as well as in production.
