@@ -17,7 +17,7 @@ class WindowManager {
 
   /**
    * @function createWindow
-   * @param {object} config - New window configuration
+   * @param {Object} config - New window configuration
    * @description Create a new BrowserWindow insatance
    */
   createWindow = (config) => {
@@ -28,7 +28,7 @@ class WindowManager {
 
   /**
    * @function getWindowByName
-   * @param {string} windowName - Window name
+   * @param {String} windowName - Window name
    * @description Get window instance using window name
    * @returns {BrowserWindow} BrowserWindow instance
    */
@@ -42,9 +42,9 @@ class WindowManager {
 
   /**
    * @function getWindowIdByName
-   * @param { string } windowName: Window name
+   * @param {String} windowName - Window name
    * @description Get window id using window name
-   * @returns {number} Window Id
+   * @returns {Number} Window Id
    */
   getWindowIdByName = (windowName) => {
     return ipcRenderer.sendSync(CONSTANTS.WM_GET_WINDOWID_BY_NAME, windowName);
@@ -70,6 +70,32 @@ class WindowManager {
     return ipcRenderer.sendSync(CONSTANTS.WM_GET_ALL_WINDOW_NAMES);
   }
 
+  /**
+   * @function getWindowsByName
+   * @param {String} windowName - Window name
+   * @description Return a list of window instances by name
+   * @returns {Array} BrowserWindows with the given name.
+   */
+  getWindowsByName = (windowName) => {
+    const windowIds = ipcRenderer.sendSync(CONSTANTS.WM_GET_WINDOWIDS_BY_NAME, windowName);
+    const windowList = windowIds.reduce((acc, windowId) => {
+      windowId && acc.push(BrowserWindow.fromId(windowId));
+
+      return acc;
+    }, [])
+
+    return windowList;
+  }
+
+  /**
+   * @function getWindowIdsByName
+   * @param {String} windowName - Window name
+   * @description Return a list of window instances by name
+   * @returns {Array} Array of windowIds by name
+   */
+  getWindowIdsByName = (windowName) => {
+    return ipcRenderer.sendSync(CONSTANTS.WM_GET_WINDOWIDS_BY_NAME, windowName);
+  }
 }
 
 export default new WindowManager();

@@ -4,6 +4,7 @@ import electronManager from '../../../../lib';
 
 const {
   logger,
+  ipc,
   storageManager,
   windowManager
 } = electronManager;
@@ -17,6 +18,7 @@ class ExampleApp {
     electronManager.init({ isDev: true });
     windowManager.init({ windowUrlPath: app.getAppPath() });
     logger.init({ handleLocalConsole: true });
+    ipc.init();
 
     app.on('ready', this.handleAppReady);
 

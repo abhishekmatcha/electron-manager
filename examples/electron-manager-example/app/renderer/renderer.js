@@ -1,5 +1,5 @@
 let { ipcRenderer } = require('electron');
-let { logger } = require('../../../../lib');
+let { logger, ipc } = require('../../../../lib');
 
 document.addEventListener('DOMContentLoaded', pageLoaded);
 
@@ -11,5 +11,15 @@ function pageLoaded() {
 
   document.getElementById("btnOpenSettings").addEventListener("click", function () {
     ipcRenderer.send('OPEN_SETTINGS');
+
+    setTimeout(() => {
+      ipc.request('CHANNEL_1', 'This a test input')
+       .then((result) => {
+         console.log(result);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }, 1000)
   });
 }

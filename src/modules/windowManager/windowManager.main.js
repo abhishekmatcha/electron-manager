@@ -24,6 +24,7 @@ class WindowManager {
     ipcMain.on(CONSTANTS.WM_CREATE_WINDOW, this._createWindow);
     ipcMain.on(CONSTANTS.WM_GET_WINDOWID_BY_NAME, (event, windowName) => { event.returnValue = this.getWindowIdByName(windowName) });
     ipcMain.on(CONSTANTS.WM_GET_ALL_WINDOW_NAMES, (event) => { event.returnValue = this.getAllWindowNames() });
+    ipcMain.on(CONSTANTS.WM_GET_WINDOWIDS_BY_NAME, (event, windowName) => { event.returnValue = this.getWindowIdsByName(windowName) });
   }
 
   /* ****************************************************************************/
@@ -32,7 +33,7 @@ class WindowManager {
 
   /**
    * @function init
-   * @param {object} config - WindowManager initial configurations
+   * @param {Object} config - WindowManager initial configurations
    * @description Initialize WindowManager module
    */
   init = (config = {}) => {
@@ -53,7 +54,7 @@ class WindowManager {
 
   /**
    * @function createWindow
-   * @param {object} config - New window configuration
+   * @param {Object} config - New window configuration
    * @description Create a new BrowserWindow insatance with the given configuration
    * @returns {BrowserWindow} BrowserWindow instance
    */
@@ -108,7 +109,7 @@ class WindowManager {
 
   /**
    * @function getWindowByName
-   * @param {string} windowName - Window name
+   * @param {String} windowName - Window name
    * @description Get window instance using window name
    * @returns {BrowserWindow} BrowserWindow instance
    */
@@ -124,8 +125,25 @@ class WindowManager {
   }
 
   /**
+   * @function getWindowIdsByName
+   * @param {String} windowName: Window name
+   * @description Return a list of window instances by name
+   * @returns {Array} an array of window Ids
+   */
+  getWindowIdsByName = (windowName) => {
+    const windows = Array.from(this._windows.values());
+    const windowIds = windows.reduce((acc, w) => {
+      if (w.name && w.id && w.name === windowName) acc.push(w.id);
+
+      return acc;
+    }, []);
+
+    return windowIds;
+  }
+
+  /**
    * @function getWindowIdByName
-   * @param {string} windowName - Window name
+   * @param {String} windowName - Window name
    * @description Get window id using window name
    * @returns {number} Window Id
    */
@@ -133,6 +151,27 @@ class WindowManager {
     const window = this.getWindowByName(windowName);
 
     return window ? window.id : null;
+  }
+
+  /**
+   * @function getWindowsByName
+   * @param {String} windowName - Window name
+   * @description Return a list of window instances by name
+   * @returns {Array} Windows with given name
+   */
+  getWindowsByName = (windowName) => {
+    if (!windowName) return null;
+
+    const windows = Array.from(this._windows.values());
+    const windowList = windows.reduce((acc, w) => {
+      if (w.id && w.name && w.name === windowName) {
+        acc.push(BrowserWindow.fromId(w.id));
+      }
+
+      return acc;
+    }, [])
+
+    return windowList;
   }
 
   /**
@@ -163,10 +202,10 @@ class WindowManager {
 
   /**
    * @function _createWindow
-   * @param {object} event - The event object
-   * @param {object} config: Window config
+   * @param {Object} event - The event object
+   * @param {Object} config: Window config
    * @description Create a browser window instance 
-   * @returns {number} window id of the newly created window.
+   * @returns {Number} window id of the newly created window.
    */
   _createWindow = (event, config) => {
     const window = this.createWindow(config)
@@ -176,8 +215,8 @@ class WindowManager {
 
   /**
    * @function _add
-   * @param {number} windowId - BrowserWindow id
-   * @param {object} data - Windoe details
+   * @param {Number} windowId - BrowserWindow id
+   * @param {Object} data - Windoe details
    * @description Add new window in WindowManager.
    */
   _add = (windowId, data) => {
@@ -188,7 +227,7 @@ class WindowManager {
 
   /**
    * @function _remove
-   * @param {number} windowId - BrowserWindow id
+   * @param {Number} windowId - BrowserWindow id
    * @description Remove window from WindowManager.
    */
   _remove = (windowId) => {
