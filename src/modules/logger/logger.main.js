@@ -116,6 +116,9 @@ class Logger {
 
     // Set file header if it is enabled in the configuration
     if (this._setFileHeader) this._addHeaderInLogFile();
+
+    // Clean old logs if option enabled in the configuration
+    if (this._cleanLogs) this._cleanLogFiles();
   }
 
   /**
@@ -202,7 +205,7 @@ class Logger {
       this._started = true;
 
       // Clean old log files
-      this._cleanLogFiles();
+      if (this._cleanLogs) this._cleanLogFiles();
     }
 
     if (!this._file) {
@@ -245,7 +248,7 @@ class Logger {
         const filePath = path.join(this._logFolderPath, file);
 
         fs.stat(filePath, (err, stats) => {
-          const diffTime = Math.abs(date - stats.birthtime)
+          const diffTime = Math.abs(new Date().getTime() - stats.birthtime.getTime())
           const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
           if (diffDays > this._logPeriod) {
