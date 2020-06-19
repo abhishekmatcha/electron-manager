@@ -1,6 +1,6 @@
 {
   "name": "@hashedin/electron-manager",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Electron utility modules for desktop applications",
   "author": "HashedIn Technologies",
   "license": "MIT",
@@ -31,7 +31,7 @@
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "copy-webpack-plugin": "5.1.1",
-    "electron": "9.0.0",
+    "electron": "9.0.4",
     "electron-mocha": "8.2.2",
     "electron-updater": "4.3.1",
     "rimraf": "3.0.2",
@@ -45,7 +45,7 @@
     "valid-filename": "3.1.0"
   },
   "peerDependencies": {
-    "electron": "9.0.0",
+    "electron": "9.0.4",
     "electron-updater": "4.3.1"
   },
   "keywords": [
