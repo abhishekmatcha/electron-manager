@@ -424,39 +424,139 @@ const win = windowManager.createWindow({
 });
 ```
  
-* **getWindowByName (main + renderer)**
+* **getWindowByName (main + renderer) *deprecated***
 
 Get the `BroserWindow` instance by its name. If there are multiple windows with the same name then, it will return the first instance from the window list.
+
+> **Warning:** *`getWindowByName` is deprecated in this release and will be removed in the next major release. Please use `getWindow` instead.*
 
 | Params        | Type   | Default Value | Description        |
 |---------------|--------|-------------- |--------------------|
 | windowName(*) | string | undefined     | Name of the window |
 
-* **getWindowIdByName (main + renderer)**
+
+* **getWindow (main + renderer)**
+
+Get the window instance using the window name or id. Passing window id to this function is the same as calling `BrowserWindow.fromId()`. If there are multiple windows with the same name then it will return the first occurrence. 
+
+| Params       | Type          | Default Value | Description              |
+|--------------|---------------|-------------- |--------------------------|
+| windowRef(*) | number/string | undefined     | Name or id of the window |
+
+
+* **getWindows (main + renderer)**
+
+Get a list of window instances using the window name or id. `windowRef` argument is optional. Calling this function without any arguments will return a list of all opened window instances. `windowRef` is a filter option. The return value will be filtered based on the filter option.
+
+| Params    | Type          | Default Value | Description              |
+|-----------|---------------|-------------- |--------------------------|
+| windowRef | number/string | undefined     | Name or id of the window |
+
+
+* **getWindowIdByName (main + renderer) *deprecated***
 
 Returns the `BroserWindow` id.
+
+> **Warning:** *`getWindowIdByName` is deprecated in this release and will be removed in the next major release. Please use `getWindowId` instead.*
 
 | Params        | Type   | Default Value | Description        |
 |---------------|--------|---------------|--------------------|
 | windowName(*) | string | undefined     | Name of the window |
 
-* **getAllWindowIds (main + renderer)**
 
-Returns an array of all opened window ids.
+* **getWindowId (main + renderer)**
 
-* **getAllWindowNames (main + renderer)**
+Get window id using window name. 
 
-Returns an array of all opened window names.
+| Params        | Type   | Default Value | Description        |
+|---------------|--------|---------------|--------------------|
+| windowName(*) | string | undefined     | Name of the window |
+
+
+* **getWindowIdsByName (main + renderer) *deprecated***
+
+Returns a list of window ids with the given window name
+
+> **Warning:** *`getWindowIdsByName` is deprecated in this release and will be removed in the next major release. Please use `getWindowIds` instead.*
+
+| Params        | Type   | Default Value | Description        |
+|---------------|--------|---------------|--------------------|
+| windowName(*) | string | undefined     | Name of the window |
+
+
+* **getWindowIds (main + renderer)**
+
+Returns a list of IDs of the windows with the given window name. Calling this function without any arguments will return the IDs of all open windows
+
+| Params     | Type   | Default Value | Description        |
+|------------|--------|---------------|--------------------|
+| windowName | string | undefined     | Name of the window |
+
+
+* **getWindowName (main + renderer)**
+
+Returns the name of the window using it's id.
+
+| Params      | Type   | Default Value | Description        |
+|-------------|--------|---------------|--------------------|
+| windowId(*) | number | undefined     | Id of the window   |
+
+
+* **getWindowNames (main + renderer)**
+
+Returns the names of all opened windows.
 
 ```js
 import { windowManager } from '@hashedin/electron-manager';
  
 ...
-const windowNames = windowManager.getAllWindowNames();
+const windowNames = windowManager.getWindowNames();
 
 console.log('Window Names:', windowNames);
 ```
 
+
+* **getWindowsByName (main + renderer) *deprecated***
+
+Returns a list of window instances by using the window name
+
+> **Warning:** *`getWindowsByName` is deprecated in this release and will be removed in the next major release. Please use `getWindows` instead.*
+
+| Params        | Type   | Default Value | Description        |
+|---------------|--------|---------------|--------------------|
+| windowName(*) | string | undefined     | Name of the window |
+
+
+* **getAllWindowIds (main + renderer) *deprecated***
+
+Return the IDs of all open windows
+
+> **Warning:** *`getAllWindowIds` is deprecated in this release and will be removed in the next major release. Please use `getWindowIds` instead.*
+
+
+* **getAllWindowNames (main + renderer) *deprecated***
+
+Returns the names of all opened windows.
+
+> **Warning:** *`getAllWindowNames` is deprecated in this release and will be removed in the next major release. Please use `getWindowNames` instead.*
+
+
+* **closeWindow (main + renderer)**
+
+Close the window using the winow name or id.
+
+| Params       | Type          | Default Value | Description                |
+|--------------|---------------|---------------|----------------------------|
+| windowRef(*) | number/string | undefined     | Id od name of the window   |
+
+
+* **destroyWindow (main + renderer)**
+
+Destroy the window using the winow name or id.
+
+| Params       | Type          | Default Value | Description                |
+|--------------|---------------|---------------|----------------------------|
+| windowRef(*) | number/string | undefined     | Id od name of the window   |
 
 ## License
  

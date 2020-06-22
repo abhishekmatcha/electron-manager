@@ -14,8 +14,8 @@ function pageLoaded() {
 
     setTimeout(() => {
       ipc.request('CHANNEL_1', 'This a test input')
-       .then((result) => {
-         console.log(result);
+        .then((result) => {
+          console.log(result);
         })
         .catch((err) => {
           console.log(err);
