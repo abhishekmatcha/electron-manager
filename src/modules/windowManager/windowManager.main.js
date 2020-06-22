@@ -23,6 +23,10 @@ class WindowManager {
     // Internal IPC event listeners
     ipcMain.on(CONSTANTS.WM_CREATE_WINDOW, this._createWindow);
     ipcMain.on(CONSTANTS.WM_GET_WINDOWID_BY_NAME, (event, windowName) => { event.returnValue = this.getWindowIdByName(windowName) });
+    ipcMain.on(CONSTANTS.WM_GET_WINDOW_ID, (event, windowName) => { event.returnValue = this.getWindowId(windowName) });
+    ipcMain.on(CONSTANTS.WM_GET_WINDOW_IDS, (event, windowName) => { event.returnValue = this.getWindowIds(windowName) });
+    ipcMain.on(CONSTANTS.WM_GET_WINDOW_NAMES, (event) => { event.returnValue = this.getWindowNames() });
+    ipcMain.on(CONSTANTS.WM_GET_WINDOW_NAME, (event, windowId) => { event.returnValue = this.getWindowName(windowId) });
     ipcMain.on(CONSTANTS.WM_GET_ALL_WINDOW_NAMES, (event) => { event.returnValue = this.getAllWindowNames() });
     ipcMain.on(CONSTANTS.WM_GET_WINDOWIDS_BY_NAME, (event, windowName) => { event.returnValue = this.getWindowIdsByName(windowName) });
   }
@@ -114,14 +118,109 @@ class WindowManager {
    * @returns {BrowserWindow} BrowserWindow instance
    */
   getWindowByName = (windowName) => {
+    console.warn('`getWindowByName` is deprecated in this release and will be removed in the next major release. Please use `getWindow` instead.');
+
     if (!windowName) return null;
 
     const windows = Array.from(this._windows.values());
     const window = windows.find(w => w.name === windowName);
 
-    if (window) return BrowserWindow.fromId(window.id);
+    return window ? BrowserWindow.fromId(window.id) : null;
+  }
 
-    return null;
+  /**
+   * @function getWindow
+   * @param {String/Number} windowRef - Window reference as id or name
+   * @description Find window instance using id or name.
+   * @returns {BrowserWindow} BrowserWindow instance
+   */
+  getWindow = (windowRef) => {
+    if (!windowRef) return null;
+
+    switch (typeof windowRef) {
+      case 'number': return BrowserWindow.fromId(windowRef)
+      case 'string': {
+        const windows = Array.from(this._windows.values());
+        const window = windows.find(w => w.name === windowRef);
+
+        return window ? BrowserWindow.fromId(window.id) : null;
+      }
+      default: return null
+    }
+  }
+
+  /**
+   * @function getWindows
+   * @param {String/Number} windowRef - Window reference as id or name
+   * @description Find windows using id or name.
+   * @returns {Array} List of windows
+   */
+  getWindows = (windowRef) => {
+    switch (typeof windowRef) {
+      case 'number': {
+        const windowInstance = BrowserWindow.fromId(windowRef);
+
+        return windowInstance ? [windowInstance] : [];
+      }
+      case 'string': {
+        const windows = Array.from(this._windows.values());
+        const windowInstances = windows.reduce((acc, w) => {
+          if (w && w.name === windowRef) {
+            const windowInstance = BrowserWindow.fromId(w.id);
+
+            if (windowInstance) acc.push(windowInstance)
+          }
+
+          return acc;
+        }, []);
+
+        return windowInstances;
+      }
+      default: {
+        const windows = Array.from(this._windows.values());
+        const windowInstances = windows.reduce((acc, w) => {
+          if (w) {
+            const windowInstance = BrowserWindow.fromId(w.id);
+
+            if (windowInstance) acc.push(windowInstance)
+          }
+
+          return acc;
+        }, []);
+
+        return windowInstances;
+      };
+    }
+  }
+
+  /**
+   * @function getWindowIdByName
+   * @param {String} windowName - Window name
+   * @description Get the id of the window by using window name.
+   * @returns {number} Window Id
+   */
+  getWindowIdByName = (windowName) => {
+    console.warn('`getWindowIdByName` is deprecated in this release and will be removed in the next major release. Please use `getWindowId` instead.');
+
+    if (!windowName) return null;
+
+    const window = this.getWindowByName(windowName);
+
+    return window ? window.id : null;
+  }
+
+  /**
+   * @function getWindowId
+   * @param {String} windowName - Window name
+   * @description Get the id of the window by using window name.
+   * @returns {Number} Window Id
+   */
+  getWindowId = (windowName) => {
+    if (!windowName) return null;
+
+    const window = this.getWindow(windowName);
+
+    return window ? window.id : null;
   }
 
   /**
@@ -131,6 +230,10 @@ class WindowManager {
    * @returns {Array} an array of window Ids
    */
   getWindowIdsByName = (windowName) => {
+    console.warn('`getWindowIdsByName` is deprecated in this release and will be removed in the next major release. Please use `getWindowIds` instead.');
+
+    if (!windowName) return [];
+
     const windows = Array.from(this._windows.values());
     const windowIds = windows.reduce((acc, w) => {
       if (w.name && w.id && w.name === windowName) acc.push(w.id);
@@ -142,15 +245,51 @@ class WindowManager {
   }
 
   /**
-   * @function getWindowIdByName
+   * @function getWindowIds
    * @param {String} windowName - Window name
-   * @description Get window id using window name
-   * @returns {number} Window Id
+   * @description Return a list of window instances by window name. If window name is not present, then return all window ids.
+   * @returns {Array} an array of window Ids
    */
-  getWindowIdByName = (windowName) => {
-    const window = this.getWindowByName(windowName);
+  getWindowIds = (windowName) => {
+    const windows = Array.from(this._windows.values());
+    const windowIds = windows.reduce((acc, w) => {
+      if (windowName) {
+        if (w.name && w.name === windowName) acc.push(w.id);
+      } else {
+        if (w.id) acc.push(w.id);
+      }
 
-    return window ? window.id : null;
+      return acc;
+    }, []);
+
+    return windowIds;
+  }
+
+  /**
+   * @function getWindowName
+   * @param {Number} windowId - Window id
+   * @description Get window name from id
+   * @returns {String} Window name
+   */
+  getWindowName = (windowId) => {
+    if (!windowId) return null;
+
+    const windows = Array.from(this._windows.values());
+    const window = windows.find(w => w.id === windowId);
+
+    return window ? window.name : null;
+  }
+
+  /**
+   * @function getWindowNames
+   * @param {Number} windowId - Window id
+   * @description Get window name from id
+   * @returns {String} Window name
+   */
+  getWindowNames = () => {
+    const windows = Array.from(this._windows.values());
+
+    return windows.map(w => w.name)
   }
 
   /**
@@ -160,6 +299,8 @@ class WindowManager {
    * @returns {Array} Windows with given name
    */
   getWindowsByName = (windowName) => {
+    console.warn('`getWindowsByName` is deprecated in this release and will be removed in the next major release. Please use `getWindows` instead.');
+
     if (!windowName) return null;
 
     const windows = Array.from(this._windows.values());
@@ -180,6 +321,8 @@ class WindowManager {
    * @returns {Array} BrowserWindow ids.
    */
   getAllWindowIds = () => {
+    console.warn('`getAllWindowIds` is deprecated in this release and will be removed in the next major release. Please use `getWindowIds` instead.');
+
     const windows = BrowserWindow.getAllWindows() || [];
 
     return windows.map(w => w.id);
@@ -191,9 +334,37 @@ class WindowManager {
    * @returns {Array} BrowserWindow names.
    */
   getAllWindowNames = () => {
+    console.warn('`getAllWindowNames` is deprecated in this release and will be removed in the next major release. Please use `getWindowNames` instead.');
+
     const windows = Array.from(this._windows.values());
 
     return windows.map(w => w.name)
+  }
+
+  /**
+   * @function closeWindow
+   * @param {String/Number} windowRef - Window reference as id or name
+   * @description Close window
+   */
+  closeWindow = (windowRef) => {
+    if (!windowRef) return;
+
+    const windowInstance = this.getWindow(windowRef);
+
+    if (windowInstance && !windowInstance.isDestroyed()) windowInstance.close();
+  }
+
+  /**
+   * @function destroyWindow
+   * @param {String/Number} windowRef - Window reference as id or name
+   * @description Destroy window
+   */
+  destroyWindow = (windowRef) => {
+    if (!windowRef) return;
+
+    const windowInstance = this.getWindow(windowRef);
+
+    if (windowInstance && !windowInstance.isDestroyed()) windowInstance.destroy();
   }
 
   /* ****************************************************************************/
