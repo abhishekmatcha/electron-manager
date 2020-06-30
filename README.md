@@ -129,18 +129,79 @@ electronUpdater.cancelUpdate();
 
 Ipc provides communication channels within the Electron application. It is a wrapper over the Electron's communication modules `ipcMain` and `ipcRenderer`.
 
-Currently we support:
-  * *Renderer to Renderer communication*
-
-Future release we support:
-  * *Main to renderer communication*
-  * *Renderer to main communication*
-
 #### Methods
 
 * **init (main)**
 
 Initialize the ipc module in the main process before using its methods. This helps to initialize all the internal communication channels.
+
+* **sendToAll (main + renderer)**
+
+You can send a message across the application using the sendToAll method. In main process, it will send the message to all open webContents. In renderer process, it will send the message to all open webContents(including the sender) as well as to the main process. 
+
+| Params       | Type          | Default Value | Description                      |
+|--------------|---------------|---------------|----------------------------------|
+| channel(*)   | string        | undefined     | Channel name                     |
+| ...args      | any           | undefined     | list of arguments                |
+
+```js
+import { ipc } from '@hashedin/electron-manager';
+
+...
+ipc.sendToAll('CHANNEL_1', 'This a test string');
+
+// In the receiver end
+...
+ipc.on('CHANNEL_1', (evt, message) => {
+  console.log(message);
+});
+```
+
+* **sendToWindow (main + renderer)**
+
+This method can be used to send a message to a particular window from both main and renderer processes. 
+
+| Params       | Type          | Default Value | Description                     |
+|--------------|---------------|---------------|---------------------------------|
+| windowRef(*) | string/number | undefined     | Name or id of the target window |
+| channel(*)   | string        | undefined     | Channel name                    |
+| ...args      | any           | undefined     | list of arguments               |
+
+> **Note:** *You can pass either id or name of the window as windowRef. Window name will work only if you create the target window using `electron-manager`'s `windowManager` module(**windowManager.createWindow()**). Window id should be a number*
+
+```js
+import { ipc } from '@hashedin/electron-manager';
+
+...
+ipc.sendToWindow(1, 'CHANNEL_1', 'This a test string');
+
+// In renderer window
+...
+ipc.on('CHANNEL_1', (evt, message) => {
+  console.log(message);
+});
+```
+* **sendToWebview (main + renderer)**
+
+You can send a message across the webviews in the application using the sendToWebview method.
+
+| Params       | Type          | Default Value | Description                      |
+|--------------|---------------|---------------|----------------------------------|
+| channel(*)   | string        | undefined     | Channel name                     |
+| ...args      | any           | undefined     | list of arguments                |
+
+```js
+import { ipc } from '@hashedin/electron-manager';
+
+...
+ipc.sendToWebview('CHANNEL_1', 'This a test string');
+
+// In the receiver end
+...
+ipc.on('CHANNEL_1', (evt, message) => {
+  console.log(message);
+});
+```
 
 * **request (renderer)**
 
@@ -563,4 +624,3 @@ Destroy the window using the winow name or id.
 Licensed under [MIT](https://github.com/hashedin/electron-manager/blob/master/LICENSE)
  
 Copyright (c) 2010-2020 | © HashedIn Technologies Pvt. Ltd.
- 
